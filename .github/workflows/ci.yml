@@ -1,0 +1,131 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validar manifests e imagem
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.17.0"
+
+      - name: Terraform está formatado
+        run: terraform fmt -check -recursive
+
+      - name: Terraform valida
+        working-directory: terraform
+        run: |
+          terraform init -backend=false
+          terraform validate
+
+      - name: Instalar kustomize e kubeconform
+        run: |
+          curl -sL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v5.8.3/kustomize_v5.8.3_linux_amd64.tar.gz" | tar xz
+          sudo mv kustomize /usr/local/bin/kustomize
+          curl -sL "https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz" | tar xz
+          sudo mv kubeconform /usr/local/bin/kubeconform
+
+      - name: Kustomize e kubeconform
+        run: |
+          set -euo pipefail
+          for overlay in dev prod; do
+            kustomize build "deploy/referencia/overlays/${overlay}" \
+              | kubeconform -strict -ignore-missing-schemas -kubernetes-version 1.32.0 -summary
+          done
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Construir a imagem
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/referencia
+          load: true
+          push: false
+          tags: prumo-referencia:ci
+
+      - name: Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: prumo-referencia:ci
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
+  kind:
+    name: Provar o workload num kind limpo
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.19.0
+
+      - name: Cluster kind
+        uses: helm/kind-action@v1.12.0
+        with:
+          cluster_name: prumo
+
+      - name: Construir e carregar a imagem
+        run: |
+          docker build -t prumo-referencia:local apps/referencia
+          kind load docker-image prumo-referencia:local --name prumo
+
+      - name: Instalar cert-manager e Kyverno
+        run: |
+          helm repo add jetstack https://charts.jetstack.io
+          helm repo add kyverno https://kyverno.github.io/kyverno/
+          helm repo update
+          helm install cert-manager jetstack/cert-manager \
+            --namespace cert-manager --create-namespace \
+            --version v1.21.3 --set crds.enabled=true --wait --timeout 10m
+          helm install kyverno kyverno/kyverno \
+            --namespace kyverno --create-namespace \
+            --version 3.9.2 --wait --timeout 10m
+          kubectl apply -k platform/certs
+          kubectl apply -k policies
+
+      - name: A política recusa um Pod inseguro
+        run: |
+          kubectl create namespace referencia-dev --dry-run=client -o yaml | kubectl apply -f -
+          for _ in $(seq 1 20); do
+            if ! kubectl apply -f policies/fixtures/pod-invalido.yaml; then
+              exit 0
+            fi
+            kubectl delete pod referencia-invalida -n referencia-dev --ignore-not-found
+            sleep 5
+          done
+          echo "O Pod invalido foi aceito. A política não segurou."
+          exit 1
+
+      - name: O overlay dev fica pronto
+        run: |
+          kubectl apply -k deploy/referencia/overlays/dev
+          kubectl -n referencia-dev rollout status deployment/referencia --timeout=180s
+          kubectl -n referencia-dev port-forward svc/referencia 18080:80 >/tmp/pf.log 2>&1 &
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:18080/healthz; then
+              echo
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "healthz não respondeu"
+          cat /tmp/pf.log
+          exit 1

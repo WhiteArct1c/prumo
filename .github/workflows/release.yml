@@ -1,0 +1,54 @@
+name: release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/referencia/**"
+      - ".github/workflows/release.yml"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  publish:
+    name: Publicar imagem e atualizar a tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Nome da imagem em minúsculas
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: apps/referencia
+          push: true
+          tags: ${{ env.IMAGE }}
+
+      - name: Instalar kustomize
+        run: |
+          curl -sL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v5.8.3/kustomize_v5.8.3_linux_amd64.tar.gz" | tar xz
+          sudo mv kustomize /usr/local/bin/kustomize
+
+      - name: Gravar a tag nova no Git
+        run: |
+          kustomize edit set image "prumo-referencia=${IMAGE}"
+        working-directory: deploy/referencia/base
+
+      - name: Commit da tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deploy/referencia/base/kustomization.yaml
+          git diff --cached --quiet && exit 0
+          git commit -m "Publica a imagem ${GITHUB_SHA} no GHCR."
+          git push
