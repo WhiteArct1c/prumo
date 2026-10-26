@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: referencia
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: prumo
+spec:
+  groups:
+    - name: prumo.referencia
+      rules:
+        - alert: ReferenciaForaDoAr
+          expr: |
+            kube_deployment_status_replicas_available{namespace=~"referencia-.+", deployment="referencia"} == 0
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "O workload de referência em {{ $labels.namespace }} está fora do ar."
+            description: "Nenhuma réplica disponível. O caminho de entrega chegou ao cluster, mas o workload não está atendendo."

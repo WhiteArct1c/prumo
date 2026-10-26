@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: referencia
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: referencia
+    app.kubernetes.io/part-of: prumo
+spec:
+  namespaceSelector:
+    matchNames:
+      - referencia-dev
+      - referencia-prod
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: referencia
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
