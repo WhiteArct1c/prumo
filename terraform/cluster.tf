@@ -10,10 +10,6 @@ resource "kind_cluster" "prumo" {
     node {
       role = "control-plane"
 
-      kubeadm_config_patches = [
-        file("${path.module}/patches/ingress-ready.yaml"),
-      ]
-
       extra_port_mappings {
         container_port = 80
         host_port      = 8080
