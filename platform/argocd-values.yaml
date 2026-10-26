@@ -1,0 +1,18 @@
+configs:
+  cm:
+    timeout.reconciliation: 30s
+  params:
+    server.insecure: true
+dex:
+  enabled: false
+notifications:
+  enabled: false
+server:
+  ingress:
+    enabled: true
+    controller: generic
+    ingressClassName: nginx
+    hostname: argocd.localhost
+    tls: false
+    annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: HTTP
