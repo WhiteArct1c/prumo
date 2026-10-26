@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: referencia-dev
+resources:
+  - ../../base
+replicas:
+  - name: referencia
+    count: 1
+patches:
+  - path: deployment.yaml
+  - path: ingress.yaml
+  - path: certificate.yaml

@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: referencia
+  labels:
+    app.kubernetes.io/name: referencia
+    app.kubernetes.io/part-of: prumo
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: referencia
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector: {}
+      ports:
+        - port: 8080
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 8080
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 8080
+    # No kind, o kubelet faz o probe a partir da rede do nó (a bridge do Docker).
+    # Em um cluster gerenciado, este bloco seria o CIDR dos nodes.
+    - from:
+        - ipBlock:
+            cidr: 172.16.0.0/12
+      ports:
+        - port: 8080

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: referencia
+  labels:
+    app.kubernetes.io/name: referencia
+    app.kubernetes.io/part-of: prumo
+spec:
+  selector:
+    app.kubernetes.io/name: referencia
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

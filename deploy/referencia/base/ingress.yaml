@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: referencia
+  labels:
+    app.kubernetes.io/name: referencia
+    app.kubernetes.io/part-of: prumo
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: referencia.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: referencia
+                port:
+                  name: http
+  tls:
+    - hosts:
+        - referencia.localhost
+      secretName: referencia-tls

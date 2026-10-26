@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: referencia
+  labels:
+    app.kubernetes.io/name: referencia
+    app.kubernetes.io/part-of: prumo
+spec:
+  secretName: referencia-tls
+  issuerRef:
+    name: prumo-selfsigned
+    kind: ClusterIssuer
+  dnsNames:
+    - referencia.localhost
