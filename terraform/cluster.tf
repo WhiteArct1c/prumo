@@ -3,6 +3,10 @@ resource "kind_cluster" "prumo" {
   wait_for_ready  = true
   kubeconfig_path = var.kubeconfig_path
 
+  # O kind 0.33 sobe Kubernetes 1.37 por padrão. Essa versão não conclui o
+  # kubeadm em Docker Desktop que ainda usa cgroup v1. A 1.32 inicia.
+  node_image = "kindest/node:v1.32.2"
+
   kind_config {
     kind        = "Cluster"
     api_version = "kind.x-k8s.io/v1alpha4"

@@ -10,4 +10,4 @@ O cluster é kind, criado pelo Terraform. As portas 8080 e 8443 do computador en
 
 ## Consequências
 
-Qualquer pessoa com Docker Desktop sobe o ambiente. O limite é a memória da máquina, não uma conta. Produção continuaria em um Kubernetes gerenciado. Este repositório não finge que o kind é esse ambiente.
+Qualquer pessoa com Docker Desktop sobe o ambiente. O limite é a memória da máquina, não uma conta. A imagem do nó fica fixa em Kubernetes 1.32: a versão que o kind atual escolhe sozinho não termina o kubeadm quando o Docker Desktop ainda está em cgroup v1. Produção continuaria em um Kubernetes gerenciado. Este repositório não finge que o kind é esse ambiente.
