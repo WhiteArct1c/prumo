@@ -18,6 +18,17 @@ spec:
             existingSecret: grafana-admin
             userKey: admin-user
             passwordKey: admin-password
+          grafana.ini:
+            dashboards:
+              default_home_dashboard_path: /tmp/dashboards/prumo.json
+            users:
+              home_page: /d/prumo/prumo
+          sidecar:
+            datasources:
+              extraJsonData:
+                manageAlerts: true
+                prometheusType: Prometheus
+                prometheusVersion: "3.5.0"
           ingress:
             enabled: true
             ingressClassName: nginx
