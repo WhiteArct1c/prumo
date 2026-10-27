@@ -6,28 +6,44 @@ produto. Um time de produto teria o próprio serviço neste lugar.
 
 import os
 import re
+import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PORT = int(os.environ.get("PORT", "8080"))
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "local")
 SAFE_ENVIRONMENT = re.sub(r"[^A-Za-z0-9_-]", "_", ENVIRONMENT) or "local"
+REQUESTS = {"/": 0, "/healthz": 0, "other": 0}
+REQUESTS_LOCK = threading.Lock()
 
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = self.path.split("?", 1)[0]
+        if path != "/metrics":
+            key = path if path in ("/", "/healthz") else "other"
+            with REQUESTS_LOCK:
+                REQUESTS[key] += 1
         if path == "/healthz":
             self._send(200, "text/plain; charset=utf-8", b"ok\n")
             return
         if path == "/metrics":
-            body = (
-                "# HELP prumo_up 1 enquanto o processo está atendendo.\n"
-                "# TYPE prumo_up gauge\n"
-                "prumo_up 1\n"
-                "# HELP prumo_info Identidade do workload de referência.\n"
-                "# TYPE prumo_info gauge\n"
-                f'prumo_info{{environment="{SAFE_ENVIRONMENT}"}} 1\n'
-            ).encode()
+            lines = [
+                "# HELP prumo_up 1 enquanto o processo está atendendo.",
+                "# TYPE prumo_up gauge",
+                "prumo_up 1",
+                "# HELP prumo_info Identidade do workload de referência.",
+                "# TYPE prumo_info gauge",
+                f'prumo_info{{environment="{SAFE_ENVIRONMENT}"}} 1',
+                "# HELP prumo_requests_total Pedidos HTTP recebidos, sem contar /metrics.",
+                "# TYPE prumo_requests_total counter",
+            ]
+            with REQUESTS_LOCK:
+                snapshot = dict(REQUESTS)
+            for route, count in snapshot.items():
+                lines.append(
+                    f'prumo_requests_total{{path="{route}",environment="{SAFE_ENVIRONMENT}"}} {count}'
+                )
+            body = ("\n".join(lines) + "\n").encode()
             self._send(200, "text/plain; version=0.0.4; charset=utf-8", body)
             return
         if path == "/":
