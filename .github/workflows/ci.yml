@@ -42,7 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           for overlay in dev prod; do
-            kustomize build "deploy/referencia/overlays/${overlay}" \
+            kustomize build "deploy/prumo/overlays/${overlay}" \
               | kubeconform -strict -ignore-missing-schemas -kubernetes-version 1.32.0 -summary
           done
 
@@ -51,15 +51,15 @@ jobs:
       - name: Construir a imagem
         uses: docker/build-push-action@v6
         with:
-          context: apps/referencia
+          context: apps/prumo
           load: true
           push: false
-          tags: prumo-referencia:ci
+          tags: prumo:ci
 
       - name: Trivy
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: prumo-referencia:ci
+          image-ref: prumo:ci
           format: table
           exit-code: "1"
           ignore-unfixed: true
@@ -85,8 +85,8 @@ jobs:
 
       - name: Construir e carregar a imagem
         run: |
-          docker build -t prumo-referencia:local apps/referencia
-          kind load docker-image prumo-referencia:local --name prumo
+          docker build -t prumo:local apps/prumo
+          kind load docker-image prumo:local --name prumo
 
       - name: Instalar cert-manager e Kyverno
         run: |
@@ -104,12 +104,12 @@ jobs:
 
       - name: A política recusa um Pod inseguro
         run: |
-          kubectl create namespace referencia-dev --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create namespace prumo-dev --dry-run=client -o yaml | kubectl apply -f -
           for _ in $(seq 1 20); do
             if ! kubectl apply -f policies/fixtures/pod-invalido.yaml; then
               exit 0
             fi
-            kubectl delete pod referencia-invalida -n referencia-dev --ignore-not-found
+            kubectl delete pod prumo-invalida -n prumo-dev --ignore-not-found
             sleep 5
           done
           echo "O Pod invalido foi aceito. A política não segurou."
@@ -117,9 +117,9 @@ jobs:
 
       - name: O overlay dev fica pronto
         run: |
-          kubectl apply -k deploy/referencia/overlays/dev
-          kubectl -n referencia-dev rollout status deployment/referencia --timeout=180s
-          kubectl -n referencia-dev port-forward svc/referencia 18080:80 >/tmp/pf.log 2>&1 &
+          kubectl apply -k deploy/prumo/overlays/dev
+          kubectl -n prumo-dev rollout status deployment/prumo --timeout=180s
+          kubectl -n prumo-dev port-forward svc/prumo 18080:80 >/tmp/pf.log 2>&1 &
           for _ in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:18080/healthz; then
               echo

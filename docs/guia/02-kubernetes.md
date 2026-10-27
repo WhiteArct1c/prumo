@@ -10,11 +10,11 @@ O kubeconfig que o `kubectl` lê está em `.cache/kubeconfig`. Ele aponta para o
 
 ## Os objetos deste serviço
 
-A base está em [deploy/referencia/base](../../deploy/referencia/base). Cada arquivo é um objeto da API.
+A base está em [deploy/prumo/base](../../deploy/prumo/base). Cada arquivo é um objeto da API.
 
-**Namespace** (`referencia` na base; `referencia-dev` e `referencia-prod` depois do Kustomize). É a fronteira de nome, de RBAC e de NetworkPolicy. Dois Deployments com o mesmo nome podem coexistir se estiverem em namespaces diferentes.
+**Namespace** (`prumo` na base; `prumo-dev` e `prumo-prod` depois do Kustomize). É a fronteira de nome, de RBAC e de NetworkPolicy. Dois Deployments com o mesmo nome podem coexistir se estiverem em namespaces diferentes.
 
-**Deployment.** Pede 1 réplica na base. O template do Pod carrega a imagem `prumo-referencia:local` com `imagePullPolicy: IfNotPresent`. O containerd usa a imagem que o `kind load` colocou no nó e só consulta um registry se ela não existir. O container escuta 8080. Duas probes HTTP em `/healthz`:
+**Deployment.** Pede 1 réplica na base. O template do Pod carrega a imagem `prumo:local` com `imagePullPolicy: IfNotPresent`. O containerd usa a imagem que o `kind load` colocou no nó e só consulta um registry se ela não existir. O container escuta 8080. Duas probes HTTP em `/healthz`:
 
 - readiness, a cada 10s: enquanto falhar, o Service não manda tráfego para esse Pod
 - liveness, a cada 20s: se falhar, o kubelet mata o container e o Deployment sobe outro
@@ -23,38 +23,38 @@ A base está em [deploy/referencia/base](../../deploy/referencia/base). Cada arq
 
 O `securityContext` fixa `runAsUser: 10001`, `runAsNonRoot`, `readOnlyRootFilesystem`, `allowPrivilegeEscalation: false` e `capabilities.drop: [ALL]`. Isso é o mesmo contrato que a política `exigir-non-root` cobra.
 
-**Service.** Tipo ClusterIP, porta 80, `targetPort` no nome `http` (a 8080 do container). O ClusterIP não muda quando o Pod é recriado. O selector `app.kubernetes.io/name: referencia` escolhe os Pods. O Ingress e o Prometheus falam com o Service, não com o IP do Pod.
+**Service.** Tipo ClusterIP, porta 80, `targetPort` no nome `http` (a 8080 do container). O ClusterIP não muda quando o Pod é recriado. O selector `app.kubernetes.io/name: prumo` escolhe os Pods. O Ingress e o Prometheus falam com o Service, não com o IP do Pod.
 
-**Ingress.** Classe `nginx`. O host da base é `referencia.localhost`. O overlay troca para `referencia.dev.localhost` ou `referencia.prod.localhost`. O caminho `/` vai para o Service na porta de nome `http`. A annotation `nginx.ingress.kubernetes.io/ssl-redirect: "false"` é obrigatória aqui: o nginx, por padrão, responde 308 e manda o cliente para a porta 443 do host. Essa porta não está publicada. O HTTPS do cluster sai na 8443 da sua máquina. Sem a annotation, `curl` na 8080 não chega no workload.
+**Ingress.** Classe `nginx`. O host da base é `prumo.test`. O overlay troca para `dev.prumo.test` ou `prod.prumo.test`. O caminho `/` vai para o Service na porta de nome `http`. A annotation `nginx.ingress.kubernetes.io/ssl-redirect: "false"` é obrigatória aqui: o nginx, por padrão, responde 308 e manda o cliente para a porta 443 do host. Essa porta não está publicada. O HTTPS do cluster sai na 8443 da sua máquina. Sem a annotation, `curl` na 8080 não chega no workload.
 
 **NetworkPolicy.** Ver o [guia 7](07-guardrails.md). Sem ela, qualquer Pod do cluster alcança a 8080.
 
-**Certificate.** Pede um certificado ao cert-manager para o host do Ingress. O Secret resultante é o `referencia-tls` citado no bloco `tls` do Ingress.
+**Certificate.** Pede um certificado ao cert-manager para o host do Ingress. O Secret resultante é o `prumo-tls` citado no bloco `tls` do Ingress.
 
 ## Portas, do seu navegador até o processo
 
 ```
-navegador  referencia.dev.localhost:8080
+navegador  dev.prumo.test:8080
     → porta 8080 do Windows
     → porta 80 do container do nó kind          (extra_port_mappings do Terraform)
     → ingress-nginx escutando hostPort 80       (Pod com toleration de control-plane)
-    → Service referencia:80
+    → Service prumo:80
     → Pod :8080
     → server.py
 ```
 
 A porta 80 do Windows está ocupada pelo HTTP.sys (`svchost`). Por isso o host usa 8080 e 8443, não 80 e 443.
 
-`*.localhost` resolve para `127.0.0.1` sem entrada no arquivo hosts. O navegador e o `curl` já encontram o ingress.
+`dev.prumo.test`, `prod.prumo.test`, `argocd.prumo.test` e `grafana.prumo.test` não resolvem sozinhos. Os quatro precisam de uma linha em `C:\Windows\System32\drivers\etc\hosts` apontando para `127.0.0.1`. A porta no navegador continua 8080.
 
 ## Aplicar na mão
 
 Com o cluster no ar e a imagem carregada, a base sobe sem o Argo CD:
 
 ```bash
-kubectl apply -k deploy/referencia/base
-kubectl -n referencia rollout status deployment/referencia
-kubectl -n referencia port-forward svc/referencia 8080:80
+kubectl apply -k deploy/prumo/base
+kubectl -n prumo rollout status deployment/prumo
+kubectl -n prumo port-forward svc/prumo 8080:80
 ```
 
 Esse `kubectl apply` é o que o capítulo 4 deixa de ser o caminho normal. Ele não fica registrado no Git, e o selfHeal do Argo CD desfaz o que divergir do commit.

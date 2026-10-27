@@ -1,20 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: referencia
+  name: prumo
   labels:
-    app.kubernetes.io/name: referencia
-    app.kubernetes.io/part-of: prumo
+    app.kubernetes.io/name: prumo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: referencia
+      app.kubernetes.io/name: prumo
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: referencia
-        app.kubernetes.io/part-of: prumo
+        app.kubernetes.io/name: prumo
     spec:
       securityContext:
         runAsNonRoot: true
@@ -23,7 +21,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: app
-          image: prumo-referencia:local
+          image: prumo:local
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

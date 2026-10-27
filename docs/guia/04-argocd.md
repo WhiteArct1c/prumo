@@ -25,8 +25,8 @@ O Terraform instala o Helm chart do Argo CD (versão 10.11.6) e uma única Appli
 | `certs` | Git, `platform/certs/` | 1 | o ClusterIssuer local |
 | `kube-prometheus-stack` | chart 92.14.0 | 1 | Prometheus, Grafana, Alertmanager |
 | `observability` | Git, `platform/observability/` | 2 | ServiceMonitor, regra e dashboard |
-| `referencia-dev` | Git, overlay dev | 3 | o workload |
-| `referencia-prod` | Git, overlay prod | 3 | o workload |
+| `prumo-dev` | Git, overlay dev | 3 | o workload |
+| `prumo-prod` | Git, overlay prod | 3 | o workload |
 
 A annotation `argocd.argoproj.io/sync-wave` ordena a sincronização. Wave menor aplica antes. O ingress existe antes de qualquer Ingress de aplicação. As políticas existem antes dos Pods do workload. A wave espera a Application anterior ficar saudável, não só aplicada.
 
@@ -38,7 +38,7 @@ Não há GitHub dentro do cluster. Um Pod no namespace `git` roda `git daemon` n
 
 Consequência prática: o Argo CD clona commits. Arquivo salvo e não commitado não existe para ele. `git status` limpo e `git log` com o commit novo são o que a próxima reconciliação enxerga.
 
-Dex e notifications estão desligados. O servidor do Argo CD escuta HTTP (`server.insecure: true`) atrás do mesmo ingress, no host `argocd.localhost`, porta 8080 da sua máquina. Usuário `admin`. A senha é gerada na instalação e fica no Secret `argocd-initial-admin-secret`, no namespace `argocd`. `make argocd-password` imprime esse valor. Ela muda se o cluster for recriado.
+Dex e notifications estão desligados. O servidor do Argo CD escuta HTTP (`server.insecure: true`) atrás do mesmo ingress, no host `argocd.prumo.test`, porta 8080 da sua máquina. Usuário `admin`. A senha é gerada na instalação e fica no Secret `argocd-initial-admin-secret`, no namespace `argocd`. `make argocd-password` imprime esse valor. Ela muda se o cluster for recriado.
 
 ## Prune, selfHeal e diff
 

@@ -6,7 +6,7 @@ O cluster precisa ter uma fonte da verdade que outra pessoa possa ler. Um pipeli
 
 ## Decisão
 
-O Argo CD é o único componente que aplica o que está em [platform/apps](../../platform/apps) e em [deploy/referencia](../../deploy/referencia). A sincronização é automática. O CI constrói a imagem, escaneia e, no workflow de release, atualiza a tag no Git. Ele não aplica manifesto de produção.
+O Argo CD é o único componente que aplica o que está em [platform/apps](../../platform/apps) e em [deploy/prumo](../../deploy/prumo). A sincronização é automática. O CI constrói a imagem, escaneia e, no workflow de release, atualiza a tag no Git. Ele não aplica manifesto de produção.
 
 No laptop, o Git que o Argo CD lê é um `git daemon` dentro do cluster, porque o repositório ainda não precisa existir no GitHub para o `make up` funcionar. O remoto passa a ser o GitHub quando o repositório for publicado. A Application troca o `repoURL`. O resto do desenho fica.
 

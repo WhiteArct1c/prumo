@@ -1,7 +1,7 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: referencia
+  name: prumo
 spec:
   dnsNames:
-    - referencia.dev.localhost
+    - prod.prumo.test

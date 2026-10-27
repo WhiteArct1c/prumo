@@ -6,19 +6,19 @@ Pré-requisito: `make up` terminou e `make check` responde `ok` nos dois hosts.
 
 Abra:
 
-- http://referencia.dev.localhost:8080
-- http://referencia.prod.localhost:8080
+- http://dev.prumo.test:8080
+- http://prod.prumo.test:8080
 
 Os dois textos citam o ambiente. `dev` tem uma réplica. `prod` tem duas.
 
 ```bash
-kubectl -n referencia-dev get deploy referencia
-kubectl -n referencia-prod get deploy referencia
+kubectl -n prumo-dev get deploy prumo
+kubectl -n prumo-prod get deploy prumo
 ```
 
 ## 2. O Git é a fonte da verdade
 
-A interface do Argo CD está em http://argocd.localhost:8080. Usuário `admin`. Senha:
+A interface do Argo CD está em http://argocd.prumo.test:8080. Usuário `admin`. Senha:
 
 ```bash
 make argocd-password
@@ -37,15 +37,15 @@ O Kyverno recusa a tag `latest` e a ausência de limites. O workload que já est
 ## 4. O alerta dispara quando o workload sai do ar
 
 ```bash
-kubectl -n referencia-prod scale deployment/referencia --replicas=0
+kubectl -n prumo-prod scale deployment/prumo --replicas=0
 ```
 
-Espere pouco mais de um minuto. No Grafana, em http://grafana.localhost:8080, usuário `admin`, senha `prumo-dev-admin`. A página inicial é o dashboard `Prumo`. O card `Alerta ReferenciaForaDoAr` mostra `disparado` em `referencia-prod`. Em Alerting, a mesma regra aparece na lista. O ambiente `dev` continua com a réplica no ar.
+Espere pouco mais de um minuto. No Grafana, em http://grafana.prumo.test:8080, usuário `admin`, senha `prumo-dev-admin`. A página inicial é o dashboard `Prumo`. O card `Alerta PrumoForaDoAr` mostra `disparado` em `prumo-prod`. Em Alerting, a mesma regra aparece na lista. O ambiente `dev` continua com a réplica no ar.
 
 Volte o ambiente ao que o Git pede. O Argo CD também desfaz isso no próximo ciclo de selfHeal. Para não esperar:
 
 ```bash
-kubectl -n referencia-prod scale deployment/referencia --replicas=2
+kubectl -n prumo-prod scale deployment/prumo --replicas=2
 ```
 
 Se o selfHeal já tiver corrigido, o comando só confirma o número.

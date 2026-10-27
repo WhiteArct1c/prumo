@@ -8,7 +8,7 @@ O formato que o Docker grava é o OCI image. O Kubernetes não fala com o Docker
 
 ## O que este workload faz
 
-O programa está em [apps/referencia/server.py](../../apps/referencia/server.py). É a biblioteca padrão do Python, sem framework. O `ThreadingHTTPServer` escuta `0.0.0.0` na porta `PORT` (8080).
+O programa está em [apps/prumo/server.py](../../apps/prumo/server.py). É a biblioteca padrão do Python, sem framework. O `ThreadingHTTPServer` escuta `0.0.0.0` na porta `PORT` (8080).
 
 | Caminho | Resposta | Quem usa |
 |---|---|---|
@@ -20,7 +20,7 @@ O programa está em [apps/referencia/server.py](../../apps/referencia/server.py)
 
 ## Como a imagem é montada
 
-O [Dockerfile](../../apps/referencia/Dockerfile) faz isto, nesta ordem:
+O [Dockerfile](../../apps/prumo/Dockerfile) faz isto, nesta ordem:
 
 1. Parte de `python:3.12-slim`. Essa base já traz o interpretador. Não instalamos pacote nenhum.
 2. `PYTHONDONTWRITEBYTECODE=1` impede o Python de criar `__pycache__`. No cluster o filesystem raiz do container é somente leitura, e esse arquivo faria o processo cair na subida.
@@ -31,8 +31,8 @@ O [Dockerfile](../../apps/referencia/Dockerfile) faz isto, nesta ordem:
 Construir e rodar fora do Kubernetes:
 
 ```bash
-docker build -t prumo-referencia:local apps/referencia
-docker run --rm --read-only -p 8080:8080 -e ENVIRONMENT=local prumo-referencia:local
+docker build -t prumo:local apps/prumo
+docker run --rm --read-only -p 8080:8080 -e ENVIRONMENT=local prumo:local
 ```
 
 `--read-only` reproduz a restrição que o Pod aplica. Se o processo precisar escrever na raiz, ele quebra aqui, antes de chegar no cluster.
@@ -42,4 +42,4 @@ curl http://127.0.0.1:8080/healthz
 curl http://127.0.0.1:8080/metrics
 ```
 
-Pare com Ctrl+C. A imagem `prumo-referencia:local` continua no Docker. O `make up` carrega essa tag para dentro do nó kind com `kind load docker-image`. Sem registry, a tag `local` só existe na sua máquina e nesse nó.
+Pare com Ctrl+C. A imagem `prumo:local` continua no Docker. O `make up` carrega essa tag para dentro do nó kind com `kind load docker-image`. Sem registry, a tag `local` só existe na sua máquina e nesse nó.

@@ -26,7 +26,7 @@ data:
           "gridPos": {"h": 5, "w": 8, "x": 0, "y": 0},
           "targets": [
             {
-              "expr": "kube_deployment_status_replicas_available{deployment=\"referencia\"}",
+              "expr": "kube_deployment_status_replicas_available{deployment=\"prumo\"}",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
@@ -87,12 +87,12 @@ data:
         {
           "id": 3,
           "type": "stat",
-          "title": "Alerta ReferenciaForaDoAr",
+          "title": "Alerta PrumoForaDoAr",
           "datasource": {"type": "prometheus", "uid": "prometheus"},
           "gridPos": {"h": 5, "w": 8, "x": 16, "y": 0},
           "targets": [
             {
-              "expr": "max by (namespace) (ALERTS{alertname=\"ReferenciaForaDoAr\",alertstate=\"firing\"}) or kube_deployment_spec_replicas{deployment=\"referencia\"} * 0",
+              "expr": "max by (namespace) (ALERTS{alertname=\"PrumoForaDoAr\",alertstate=\"firing\"}) or kube_deployment_spec_replicas{deployment=\"prumo\"} * 0",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
@@ -151,7 +151,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 5},
           "targets": [
             {
-              "expr": "kube_deployment_status_replicas_available{deployment=\"referencia\"}",
+              "expr": "kube_deployment_status_replicas_available{deployment=\"prumo\"}",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
@@ -173,7 +173,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 13},
           "targets": [
             {
-              "expr": "sum by (namespace) (rate(container_cpu_usage_seconds_total{namespace=~\"referencia-.+\",container=\"app\"}[2m]))",
+              "expr": "sum by (namespace) (rate(container_cpu_usage_seconds_total{namespace=~\"prumo-.+\",container=\"app\"}[2m]))",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
@@ -195,7 +195,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 13},
           "targets": [
             {
-              "expr": "sum by (namespace) (container_memory_working_set_bytes{namespace=~\"referencia-.+\",container=\"app\"})",
+              "expr": "sum by (namespace) (container_memory_working_set_bytes{namespace=~\"prumo-.+\",container=\"app\"})",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }

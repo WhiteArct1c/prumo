@@ -17,8 +17,8 @@ spec:
               kinds:
                 - Pod
               namespaces:
-                - referencia-dev
-                - referencia-prod
+                - prumo-dev
+                - prumo-prod
       validate:
         message: "A imagem precisa de uma tag explícita."
         pattern:
@@ -32,8 +32,8 @@ spec:
               kinds:
                 - Pod
               namespaces:
-                - referencia-dev
-                - referencia-prod
+                - prumo-dev
+                - prumo-prod
       validate:
         message: "A tag latest é proibida. Publique uma tag imutável."
         pattern:

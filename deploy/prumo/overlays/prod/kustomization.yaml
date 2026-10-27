@@ -1,11 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: referencia-dev
+namespace: prumo-prod
 resources:
   - ../../base
 replicas:
-  - name: referencia
-    count: 1
+  - name: prumo
+    count: 2
 patches:
   - path: deployment.yaml
   - path: ingress.yaml

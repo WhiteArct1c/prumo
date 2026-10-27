@@ -17,8 +17,8 @@ spec:
               kinds:
                 - Pod
               namespaces:
-                - referencia-dev
-                - referencia-prod
+                - prumo-dev
+                - prumo-prod
       validate:
         message: "Todo container precisa declarar requests e limits de cpu e memory."
         pattern:

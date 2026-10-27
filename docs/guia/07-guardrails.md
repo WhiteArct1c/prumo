@@ -8,7 +8,7 @@ O Kyverno decide se um objeto pode ser gravado na API. A NetworkPolicy decide qu
 
 O Kyverno é um admission webhook. O chart 3.9.2 sobe quatro controladores no namespace `kyverno`: admission, background, cleanup e reports. O admission registra um `ValidatingWebhookConfiguration`. Quando o API server recebe um Pod, ele pausa a gravação e pergunta ao Kyverno. `validationFailureAction: Enforce` faz o API server devolver 403. `Audit` só registraria.
 
-As políticas são `ClusterPolicy` (grupo `kyverno.io/v1`) em [policies](../../policies). Cada regra tem um `match` restrito aos namespaces `referencia-dev` e `referencia-prod`. Um chart de terceiro, no namespace dele, não passa por essas regras. A cerca está no serviço que este repositório entrega, não no ingress-nginx nem no Prometheus.
+As políticas são `ClusterPolicy` (grupo `kyverno.io/v1`) em [policies](../../policies). Cada regra tem um `match` restrito aos namespaces `prumo-dev` e `prumo-prod`. Um chart de terceiro, no namespace dele, não passa por essas regras. A cerca está no serviço que este repositório entrega, não no ingress-nginx nem no Prometheus.
 
 | Política | O que o `pattern` exige |
 |---|---|
@@ -24,11 +24,11 @@ Prova, com o cluster no ar:
 kubectl apply -f policies/fixtures/pod-invalido.yaml
 ```
 
-O manifesto pede `image: nginx:latest`, não declara resources e não tem securityContext, no namespace `referencia-dev`. A resposta do API server cita as três regras. O arquivo não está no `kustomization.yaml` das políticas. Se estivesse, o Argo CD tentaria aplicá-lo para sempre e a Application `policies` ficaria Degraded.
+O manifesto pede `image: nginx:latest`, não declara resources e não tem securityContext, no namespace `prumo-dev`. A resposta do API server cita as três regras. O arquivo não está no `kustomization.yaml` das políticas. Se estivesse, o Argo CD tentaria aplicá-lo para sempre e a Application `policies` ficaria Degraded.
 
 ## NetworkPolicy
 
-O objeto em [deploy/referencia/base/networkpolicy.yaml](../../deploy/referencia/base/networkpolicy.yaml) seleciona os Pods `app.kubernetes.io/name: referencia` e declara `policyTypes: [Ingress]`. A partir daí, tráfego de entrada na porta 8080 só entra se a origem estiver numa destas regras:
+O objeto em [deploy/prumo/base/networkpolicy.yaml](../../deploy/prumo/base/networkpolicy.yaml) seleciona os Pods `app.kubernetes.io/name: prumo` e declara `policyTypes: [Ingress]`. A partir daí, tráfego de entrada na porta 8080 só entra se a origem estiver numa destas regras:
 
 - qualquer Pod do mesmo namespace (`podSelector: {}`)
 - Pods do namespace `ingress-nginx` (o label `kubernetes.io/metadata.name` é automático)

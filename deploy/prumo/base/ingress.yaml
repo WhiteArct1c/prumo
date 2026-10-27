@@ -1,26 +1,26 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: referencia
+  name: prumo
   labels:
-    app.kubernetes.io/name: referencia
+    app.kubernetes.io/name: prumo
     app.kubernetes.io/part-of: prumo
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
-    - host: referencia.localhost
+    - host: prumo.test
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: referencia
+                name: prumo
                 port:
                   name: http
   tls:
     - hosts:
-        - referencia.localhost
-      secretName: referencia-tls
+        - prumo.test
+      secretName: prumo-tls

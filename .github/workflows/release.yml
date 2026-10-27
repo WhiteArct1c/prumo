@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "apps/referencia/**"
+      - "apps/prumo/**"
       - ".github/workflows/release.yml"
 
 permissions:
@@ -30,7 +30,7 @@ jobs:
 
       - uses: docker/build-push-action@v6
         with:
-          context: apps/referencia
+          context: apps/prumo
           push: true
           tags: ${{ env.IMAGE }}
 
@@ -41,14 +41,14 @@ jobs:
 
       - name: Gravar a tag nova no Git
         run: |
-          kustomize edit set image "prumo-referencia=${IMAGE}"
-        working-directory: deploy/referencia/base
+          kustomize edit set image "prumo=${IMAGE}"
+        working-directory: deploy/prumo/base
 
       - name: Commit da tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add deploy/referencia/base/kustomization.yaml
+          git add deploy/prumo/base/kustomization.yaml
           git diff --cached --quiet && exit 0
           git commit -m "Publica a imagem ${GITHUB_SHA} no GHCR."
           git push

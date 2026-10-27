@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: referencia-prod
+  name: prumo-dev
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "3"
@@ -10,10 +10,10 @@ spec:
   source:
     repoURL: git://git.git.svc.cluster.local/prumo
     targetRevision: HEAD
-    path: deploy/referencia/overlays/prod
+    path: deploy/prumo/overlays/dev
   destination:
     server: https://kubernetes.default.svc
-    namespace: referencia-prod
+    namespace: prumo-dev
   syncPolicy:
     automated:
       prune: true

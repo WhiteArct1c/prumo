@@ -1,14 +1,14 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: referencia
+  name: prumo
   labels:
-    app.kubernetes.io/name: referencia
+    app.kubernetes.io/name: prumo
     app.kubernetes.io/part-of: prumo
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: referencia
+      app.kubernetes.io/name: prumo
   policyTypes:
     - Ingress
   ingress:

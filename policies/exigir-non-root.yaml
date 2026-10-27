@@ -17,8 +17,8 @@ spec:
               kinds:
                 - Pod
               namespaces:
-                - referencia-dev
-                - referencia-prod
+                - prumo-dev
+                - prumo-prod
       validate:
         message: "O Pod e os containers precisam rodar sem root, sem escalar privilégio, e sem capabilities."
         pattern:

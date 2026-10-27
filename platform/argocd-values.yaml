@@ -12,7 +12,7 @@ server:
     enabled: true
     controller: generic
     ingressClassName: nginx
-    hostname: argocd.localhost
+    hostname: argocd.prumo.test
     tls: false
     annotations:
       nginx.ingress.kubernetes.io/backend-protocol: HTTP

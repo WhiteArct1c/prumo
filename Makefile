@@ -11,7 +11,7 @@ export KUBECONFIG := $(HOST_PATH)/.cache/kubeconfig
 export SOPS_AGE_KEY_FILE := $(HOST_PATH)/keys/dev.agekey
 export TF_IN_AUTOMATION := 1
 
-APP_IMAGE ?= $(shell kustomize build deploy/referencia/overlays/dev | awk '/image: / { print $$2; exit }')
+APP_IMAGE ?= $(shell kustomize build deploy/prumo/overlays/dev | awk '/image: / { print $$2; exit }')
 
 .PHONY: up down build status check argocd-password grafana-password check-commit
 
@@ -25,7 +25,7 @@ up: check-commit build
 		-var="kubeconfig_path=$(KUBECONFIG)"
 
 build:
-	docker build -t "$(APP_IMAGE)" apps/referencia
+	docker build -t "$(APP_IMAGE)" apps/prumo
 	docker build -t prumo-git:local platform/git
 
 check-commit:
@@ -43,9 +43,9 @@ status:
 	kubectl get pods -A
 
 check:
-	curl -fsS http://referencia.dev.localhost:8080/healthz
+	curl -fsS http://dev.prumo.test:8080/healthz
 	echo
-	curl -fsS http://referencia.prod.localhost:8080/healthz
+	curl -fsS http://prod.prumo.test:8080/healthz
 	echo
 
 argocd-password:
