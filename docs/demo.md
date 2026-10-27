@@ -40,13 +40,7 @@ O Kyverno recusa a tag `latest` e a ausência de limites. O workload que já est
 kubectl -n referencia-prod scale deployment/referencia --replicas=0
 ```
 
-Espere pouco mais de um minuto. No Grafana, em http://grafana.localhost:8080, usuário `admin`, a senha sai de:
-
-```bash
-make grafana-password
-```
-
-Abra Alerting. A regra `ReferenciaForaDoAr` fica ativa para `referencia-prod`. O ambiente `dev` continua com a réplica no ar.
+Espere pouco mais de um minuto. No Grafana, em http://grafana.localhost:8080, usuário `admin`, senha `prumo-dev-admin`. A página inicial é o dashboard `Prumo`. O card `Alerta ReferenciaForaDoAr` mostra `disparado` em `referencia-prod`. Em Alerting, a mesma regra aparece na lista. O ambiente `dev` continua com a réplica no ar.
 
 Volte o ambiente ao que o Git pede. O Argo CD também desfaz isso no próximo ciclo de selfHeal. Para não esperar:
 

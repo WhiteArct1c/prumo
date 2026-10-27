@@ -25,8 +25,8 @@ Depois de `make up`, na mesma máquina:
 |---|---|
 | http://referencia.dev.localhost:8080 | Workload, uma réplica |
 | http://referencia.prod.localhost:8080 | Workload, duas réplicas |
-| http://argocd.localhost:8080 | Argo CD. Usuário `admin`, senha em `make argocd-password` |
-| http://grafana.localhost:8080 | Grafana. Usuário `admin`, senha em `make grafana-password` |
+| http://argocd.localhost:8080 | Argo CD. Usuário `admin`. A senha é gerada na instalação: `make argocd-password` |
+| http://grafana.localhost:8080 | Grafana. Usuário `admin`, senha `prumo-dev-admin` |
 
 O Grafana usa a senha cifrada em `platform/secrets/grafana-admin.yaml`. A chave que abre esse arquivo está no repositório de propósito. Leia [docs/adr/0004-sops-com-chave-de-desenvolvimento.md](docs/adr/0004-sops-com-chave-de-desenvolvimento.md).
 
@@ -60,7 +60,7 @@ O Argo CD lê commits. Um arquivo salvo e não commitado não entra no cluster.
 - `deploy/referencia/` é a base e os overlays `dev` e `prod`
 - `policies/` são as regras do Kyverno para os namespaces do workload
 - `apps/referencia/` é o workload de referência
-- `docs/guia/` explica cada ferramenta, na ordem em que o problema aparece
+- `docs/guia/` explica cada ferramenta. O [mapa do Argo CD](docs/guia/00-mapa-do-argocd.md) diz o que é cada nome da interface. O [guia 9](docs/guia/09-outra-aplicacao.md) descreve como colocar outra API no mesmo kind
 - `docs/adr/` registra as decisões
 - `docs/demo.md` é o roteiro de cinco minutos
 
