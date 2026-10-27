@@ -10,7 +10,7 @@ data:
     {
       "title": "Prumo",
       "uid": "prumo",
-      "description": "Workload de referência em dev e prod.",
+      "description": "Dev e prod do workload.",
       "schemaVersion": 39,
       "version": 2,
       "refresh": "30s",
@@ -26,7 +26,7 @@ data:
           "gridPos": {"h": 5, "w": 8, "x": 0, "y": 0},
           "targets": [
             {
-              "expr": "kube_deployment_status_replicas_available{deployment=\"prumo\"}",
+              "expr": "kube_deployment_status_replicas_available{namespace=~\"prumo-dev|prumo-prod\",deployment=\"prumo\"}",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
@@ -59,7 +59,7 @@ data:
           "gridPos": {"h": 5, "w": 8, "x": 8, "y": 0},
           "targets": [
             {
-              "expr": "sum by (namespace) (prumo_up)",
+              "expr": "sum by (namespace) (prumo_up{namespace=~\"prumo-dev|prumo-prod\"})",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
@@ -129,7 +129,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 5},
           "targets": [
             {
-              "expr": "sum by (namespace) (rate(prumo_requests_total[2m]))",
+              "expr": "sum by (namespace) (rate(prumo_requests_total{namespace=~\"prumo-dev|prumo-prod\"}[2m]))",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
@@ -151,7 +151,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 5},
           "targets": [
             {
-              "expr": "kube_deployment_status_replicas_available{deployment=\"prumo\"}",
+              "expr": "kube_deployment_status_replicas_available{namespace=~\"prumo-dev|prumo-prod\",deployment=\"prumo\"}",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
