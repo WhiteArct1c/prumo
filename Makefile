@@ -26,6 +26,7 @@ up: check-commit build
 
 build:
 	docker build -t "$(APP_IMAGE)" apps/referencia
+	docker build -t prumo-git:local platform/git
 
 check-commit:
 	@git rev-parse --verify HEAD >/dev/null 2>&1 || { echo "O Argo CD so le commit. Crie o primeiro commit e rode make up de novo."; exit 1; }

@@ -45,3 +45,14 @@ resource "terraform_data" "load_image" {
     command = "kind load docker-image ${var.app_image} --name ${kind_cluster.prumo.name}"
   }
 }
+
+resource "terraform_data" "load_git_image" {
+  triggers_replace = [
+    kind_cluster.prumo.id,
+    "prumo-git:local",
+  ]
+
+  provisioner "local-exec" {
+    command = "kind load docker-image prumo-git:local --name ${kind_cluster.prumo.name}"
+  }
+}

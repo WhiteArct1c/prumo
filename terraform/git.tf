@@ -36,9 +36,10 @@ resource "kubernetes_deployment" "git" {
 
       spec {
         container {
-          name    = "git"
-          image   = "alpine/git:2.49.1"
-          command = ["git"]
+          name              = "git"
+          image             = "prumo-git:local"
+          image_pull_policy = "IfNotPresent"
+          command           = ["git"]
           args = [
             "daemon",
             "--reuseaddr",
@@ -80,6 +81,8 @@ resource "kubernetes_deployment" "git" {
       }
     }
   }
+
+  depends_on = [terraform_data.load_git_image]
 }
 
 resource "kubernetes_service" "git" {
