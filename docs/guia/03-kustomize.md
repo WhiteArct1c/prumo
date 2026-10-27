@@ -1,17 +1,31 @@
 # 3. Kustomize
 
-A base descreve o serviço uma vez. O overlay diz o que muda no ambiente. `dev` e `prod` não são duas cópias do Deployment. São a mesma base com três diferenças: namespace, número de réplicas e host.
+## O que é
 
-- [overlays/dev](../../deploy/referencia/overlays/dev) usa o namespace `referencia-dev`, 1 réplica e `referencia.dev.localhost`
-- [overlays/prod](../../deploy/referencia/overlays/prod) usa `referencia-prod`, 2 réplicas e `referencia.prod.localhost`
+Kustomize é um gerador de YAML. Ele não é um template com `if`. Você declara uma base e uma lista de patches. `kustomize build` imprime os objetos já com namespace, réplicas, imagem e patches aplicados. O `kubectl apply -k` e o Argo CD consomem essa saída. O cluster nunca vê o `kustomization.yaml`. Ele vê Deployment, Service, Ingress.
 
-O campo `namespace` do `kustomization.yaml` reescreve o namespace de todos os recursos, inclusive o objeto Namespace. O patch do Deployment troca só a variável `ENVIRONMENT`. O patch do Ingress troca o host.
+Helm, usado nas peças de terceiro, é outro gerador: chart com `values.yaml` e templates. Aqui o Helm instala ingress-nginx, cert-manager, Kyverno, kube-prometheus-stack e o Argo CD. O Kustomize descreve o que é nosso, porque a diferença entre `dev` e `prod` é pequena e não precisa de linguagem de template.
 
-Veja o YAML final, sem aplicar nada:
+## Base e overlays
+
+A base em [deploy/referencia/base/kustomization.yaml](../../deploy/referencia/base/kustomization.yaml) lista os seis objetos e o bloco `images`, onde a tag da imagem é trocada pelo workflow de release.
+
+O overlay não copia o Deployment. Ele aponta para a base:
+
+- [overlays/dev](../../deploy/referencia/overlays/dev): namespace `referencia-dev`, `replicas: 1`, patch de `ENVIRONMENT=dev`, host `referencia.dev.localhost`
+- [overlays/prod](../../deploy/referencia/overlays/prod): namespace `referencia-prod`, `replicas: 2`, patch de `ENVIRONMENT=prod`, host `referencia.prod.localhost`
+
+O campo `namespace` do `kustomization.yaml` reescreve `metadata.namespace` de todo objeto, inclusive o Namespace. Os patches são Strategic Merge: um Deployment com o mesmo `metadata.name` e só o campo `env` substitui esse campo e mantém o resto da base (probes, resources, securityContext, imagem).
+
+A imagem é a mesma nos dois overlays. O que muda é configuração: réplicas, namespace, variável e hostname. É o critério que separa "promover o artefato" de "reescrever o serviço".
+
+## Ver o YAML que o cluster recebe
 
 ```bash
 kustomize build deploy/referencia/overlays/dev
 kustomize build deploy/referencia/overlays/prod
 ```
 
-A imagem publicada pela Actions é trocada na base, no bloco `images` de [kustomization.yaml](../../deploy/referencia/base/kustomization.yaml). Os dois ambientes passam a apontar para a mesma tag. A configuração muda. O artefato, não.
+Confira três linhas na saída de prod: `replicas: 2`, `value: prod` e `host: referencia.prod.localhost`. Se o patch não entrou, o nome do objeto no patch não bate com o da base e o Kustomize ignora o arquivo em silêncio só quando ele não está listado. Se está listado e o nome erra, o build falha.
+
+O CI roda esse build e passa a saída no kubeconform, contra os schemas do Kubernetes 1.32. Objeto com campo inventado quebra o pipeline antes de existir no cluster.
