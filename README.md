@@ -34,7 +34,7 @@ O Grafana usa a senha cifrada em `platform/secrets/grafana-admin.yaml`. A chave 
 
 - Docker Desktop em execução, com pelo menos 6 GB de memória para o kube-prometheus-stack
 - `make`, `terraform`, `kind`, `kubectl`, `helm`, `kustomize`, `sops` e `age` no `PATH`
-- As portas 8080 e 8443 livres. O kind escuta nelas porque a porta 80 do Windows costuma estar com o HTTP.sys. Dentro do nó, o ingress continua na porta 80.
+- As portas 8080 e 8443 livres. O HTTP fica na porta 8080. O certificado local também existe na 8443, e o ingress não redireciona o HTTP para lá.
 
 No Windows, o `make` deste repositório usa o bash que vem com o Git for Windows.
 

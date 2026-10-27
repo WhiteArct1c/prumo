@@ -24,6 +24,8 @@ spec:
             hosts:
               - grafana.localhost
             path: /
+            annotations:
+              nginx.ingress.kubernetes.io/ssl-redirect: "false"
           resources:
             requests:
               cpu: 50m

@@ -5,6 +5,8 @@ metadata:
   labels:
     app.kubernetes.io/name: referencia
     app.kubernetes.io/part-of: prumo
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
