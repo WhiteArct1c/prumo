@@ -29,6 +29,47 @@ spec:
                 manageAlerts: true
                 prometheusType: Prometheus
                 prometheusVersion: "3.5.0"
+          additionalDataSources:
+            - name: Mimir
+              uid: mimir
+              type: prometheus
+              access: proxy
+              url: http://mimir.monitoring.svc:9009/prometheus
+              jsonData:
+                prometheusType: Mimir
+                timeInterval: 30s
+            - name: Loki
+              uid: loki
+              type: loki
+              access: proxy
+              url: http://loki.monitoring.svc:3100
+              jsonData:
+                derivedFields:
+                  - name: trace_id
+                    matcherRegex: 'trace_id=([0-9a-f]{32})'
+                    url: '$${__value.raw}'
+                    datasourceUid: tempo
+                    urlDisplayLabel: Abrir no Tempo
+            - name: Tempo
+              uid: tempo
+              type: tempo
+              access: proxy
+              url: http://tempo.monitoring.svc:3200
+              jsonData:
+                tracesToLogsV2:
+                  datasourceUid: loki
+                  spanStartTimeShift: -5m
+                  spanEndTimeShift: 5m
+                  customQuery: true
+                  query: '{namespace=~"prumo-.+|ingress-nginx"} |= "$${__trace.traceId}"'
+                tracesToMetrics:
+                  datasourceUid: mimir
+                serviceMap:
+                  datasourceUid: mimir
+                nodeGraph:
+                  enabled: true
+                lokiSearch:
+                  datasourceUid: loki
           ingress:
             enabled: true
             ingressClassName: nginx
