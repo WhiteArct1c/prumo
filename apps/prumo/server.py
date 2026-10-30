@@ -14,6 +14,7 @@ ENVIRONMENT = os.environ.get("ENVIRONMENT", "local")
 SAFE_ENVIRONMENT = re.sub(r"[^A-Za-z0-9_-]", "_", ENVIRONMENT) or "local"
 REQUESTS = {"/": 0, "/healthz": 0, "other": 0}
 REQUESTS_LOCK = threading.Lock()
+TRACEPARENT = re.compile(r"^[0-9a-f]{2}-([0-9a-f]{32})-[0-9a-f]{16}-[0-9a-f]{2}$")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -60,7 +61,12 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def log_message(self, fmt, *args):
-        print(f"[{SAFE_ENVIRONMENT}] {self.address_string()} {fmt % args}")
+        line = f"[{SAFE_ENVIRONMENT}] {self.address_string()} {fmt % args}"
+        headers = getattr(self, "headers", None)
+        match = TRACEPARENT.match(headers.get("traceparent", "")) if headers else None
+        if match:
+            line += f" trace_id={match.group(1)}"
+        print(line)
 
 
 if __name__ == "__main__":
