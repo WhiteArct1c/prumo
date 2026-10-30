@@ -55,6 +55,8 @@ spec:
           prometheusSpec:
             replicas: 1
             retention: 6h
+            remoteWrite:
+              - url: http://mimir.monitoring.svc:9009/api/v1/push
             resources:
               requests:
                 cpu: 100m
