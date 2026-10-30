@@ -12,7 +12,7 @@ data:
       "uid": "prumo",
       "description": "Dev e prod do workload.",
       "schemaVersion": 39,
-      "version": 2,
+      "version": 3,
       "refresh": "30s",
       "time": {"from": "now-1h", "to": "now"},
       "timezone": "browser",
@@ -207,6 +207,27 @@ data:
               "custom": {"drawStyle": "line", "fillOpacity": 20, "spanNulls": true, "showPoints": "never"}
             },
             "overrides": []
+          }
+        },
+        {
+          "id": 8,
+          "type": "logs",
+          "title": "Logs do container app",
+          "description": "Linhas que passaram pelo ingress trazem trace_id. Abra a linha e siga o link para o Tempo.",
+          "datasource": {"type": "loki", "uid": "loki"},
+          "gridPos": {"h": 10, "w": 24, "x": 0, "y": 21},
+          "targets": [
+            {
+              "expr": "{namespace=~\"prumo-dev|prumo-prod\", container=\"app\"}",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "wrapLogMessage": true,
+            "sortOrder": "Descending",
+            "enableLogDetails": true,
+            "dedupStrategy": "none"
           }
         }
       ]
