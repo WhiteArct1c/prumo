@@ -49,3 +49,15 @@ kubectl -n prumo-prod scale deployment/prumo --replicas=2
 ```
 
 Se o selfHeal já tiver corrigido, o comando só confirma o número.
+
+## 5. Do log ao trace
+
+Faça alguns pedidos pelo ingress:
+
+```bash
+for i in 1 2 3 4 5; do curl -s http://prod.prumo.test:8080/ >/dev/null; done
+```
+
+No dashboard `Prumo`, o painel `Logs do container app` mostra as linhas novas terminando em `trace_id=...`. Abra uma linha. O campo `trace_id` tem o link `Abrir no Tempo`. O trace mostra o span `HTTP GET prod.prumo.test` do ingress-nginx, com status e duração.
+
+No trace, o botão de logs do span volta ao Loki e lista as duas linhas do mesmo pedido: a do ingress-nginx e a do workload. As linhas de `/healthz` não têm `trace_id`: a probe do kubelet não passa pelo ingress.
