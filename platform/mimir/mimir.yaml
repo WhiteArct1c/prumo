@@ -1,0 +1,59 @@
+target: all
+multitenancy_enabled: false
+
+usage_stats:
+  enabled: false
+
+activity_tracker:
+  filepath: /data/metrics-activity.log
+
+server:
+  http_listen_port: 9009
+  grpc_listen_port: 9095
+  log_level: warn
+
+blocks_storage:
+  backend: filesystem
+  filesystem:
+    dir: /data/blocks
+  tsdb:
+    dir: /data/tsdb
+  bucket_store:
+    sync_dir: /data/tsdb-sync
+
+compactor:
+  data_dir: /data/compactor
+  sharding_ring:
+    kvstore:
+      store: memberlist
+
+distributor:
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: memberlist
+
+ingester:
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: memberlist
+    replication_factor: 1
+
+store_gateway:
+  sharding_ring:
+    replication_factor: 1
+
+ruler:
+  rule_path: /data/ruler
+
+ruler_storage:
+  backend: filesystem
+  filesystem:
+    dir: /data/rules
+
+limits:
+  ingestion_rate: 50000
+  ingestion_burst_size: 500000
+  max_global_series_per_user: 300000
+  compactor_blocks_retention_period: 7d
