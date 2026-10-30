@@ -26,13 +26,13 @@ Depois de `make up`, na mesma máquina:
 | http://dev.prumo.test:8080 | Workload, uma réplica |
 | http://prod.prumo.test:8080 | Workload, duas réplicas |
 | http://argocd.prumo.test:8080 | Argo CD. Usuário `admin`. A senha é gerada na instalação: `make argocd-password` |
-| http://grafana.prumo.test:8080 | Grafana. Usuário `admin`, senha `prumo-dev-admin` |
+| http://grafana.prumo.test:8080 | Grafana. Usuário `admin`, senha `prumo-dev-admin`. Lê métricas (Prometheus e Mimir), logs (Loki) e traces (Tempo) |
 
 O Grafana usa a senha cifrada em `platform/secrets/grafana-admin.yaml`. A chave que abre esse arquivo está no repositório de propósito. Leia [docs/adr/0004-sops-com-chave-de-desenvolvimento.md](docs/adr/0004-sops-com-chave-de-desenvolvimento.md).
 
 ## Pré-requisitos
 
-- Docker Desktop em execução, com pelo menos 6 GB de memória para o kube-prometheus-stack
+- Docker Desktop em execução, com pelo menos 8 GB de memória para o kube-prometheus-stack, o Loki, o Tempo e o Mimir
 - `make`, `terraform`, `kind`, `kubectl`, `helm`, `kustomize`, `sops` e `age` no `PATH`
 - As portas 8080 e 8443 livres. O HTTP fica na porta 8080. O certificado local também existe na 8443, e o ingress não redireciona o HTTP para lá.
 - Esta linha em `C:\Windows\System32\drivers\etc\hosts`: `127.0.0.1 dev.prumo.test prod.prumo.test argocd.prumo.test grafana.prumo.test`
@@ -58,6 +58,7 @@ O Argo CD lê commits. Um arquivo salvo e não commitado não entra no cluster.
 - `platform/apps/` é a lista de Applications que o Argo CD reconcilia
 - `platform/certs/` é o emissor de certificado local
 - `platform/observability/` é o ServiceMonitor, o alerta e o dashboard
+- `platform/mimir/` é o Mimir em modo monolítico. Loki, Tempo e o coletor Alloy vêm de chart, configurados em `platform/apps/`
 - `deploy/prumo/` é a base e os overlays `dev` e `prod`
 - `policies/` são as regras do Kyverno para os namespaces do workload
 - `apps/prumo/` é o workload de referência
