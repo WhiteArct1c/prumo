@@ -1,8 +1,6 @@
-<p align="center">
-  <img src="docs/assets/prumo-logo-no-background.png" alt="Prumo">
-</p>
+![Prumo](docs/assets/prumo-logo-no-background.png)
 
-A local Kubernetes platform you can stand up on a laptop to see how an application behaves in a cluster that already looks like a cloud one: GitOps, admission policies, TLS, and observability.
+Prumo is a local Kubernetes platform you can stand up on a laptop to see how an application behaves in a cluster that already looks like a cloud one: GitOps, admission policies, TLS, and observability.
 
 | Infrastructure    | ![Kubernetes](https://img.shields.io/badge/Kubernetes-1.32.2-326CE5?logo=kubernetes&logoColor=white) ![Terraform](https://img.shields.io/badge/Terraform-1.17.0-844FBA?logo=terraform&logoColor=white) ![Kustomize](https://img.shields.io/badge/Kustomize-5.8.3-326CE5) ![Argo CD](https://img.shields.io/badge/Argo%20CD-chart%2010.11.6-EF7B4D?logo=argo&logoColor=white) ![ingress-nginx](https://img.shields.io/badge/ingress--nginx-chart%204.15.1-009639?logo=nginx&logoColor=white) |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
