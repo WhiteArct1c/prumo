@@ -22,6 +22,11 @@ resource "helm_release" "root" {
   wait      = true
   timeout   = 300
 
+  set {
+    name  = "appsPath"
+    value = "platform/apps/${var.observability_profile}"
+  }
+
   depends_on = [
     helm_release.argocd,
     kubernetes_service.git,

@@ -13,7 +13,7 @@ Provider `tehcyx/kind` 0.11.0, Helm 2.17.0, Kubernetes 2.38.0, SOPS 1.4.1. Terra
 1. **kind cluster** in [terraform/cluster.tf](../../terraform/cluster.tf). One `kindest/node:v1.32.2` node. kind 0.33 uses Kubernetes 1.37 by default, and that version does not finish `kubeadm init` on Docker Desktop when the daemon is still on cgroup v1. 1.32 starts. The node publishes `host 8080 → container 80` and `host 8443 → container 443`, only on `127.0.0.1`. Without `listen_address`, Docker would publish on every interface and Grafana would be open to the local network. The node mounts the repository `.git` at `/git/prumo/.git`, read-only. The whole folder would bring `terraform.tfstate` and the kubeconfig along.
 2. **Image load.** The provider has no `kind_load` resource. Two `terraform_data` resources call `kind load docker-image` for the workload image and for `prumo-git:local`. The workload image name is whatever the `dev` overlay asks for: `prumo:local` until the first CI release, `ghcr.io/<owner>/prumo:<tag>` after that. Without the load, the kubelet sits in `ImagePullBackOff`, because the `local` tag exists in no registry.
 3. **Git daemon** in [terraform/git.tf](../../terraform/git.tf). Namespace `git`, Deployment with image `prumo-git:local` and `imagePullPolicy: IfNotPresent`. The command is `git daemon --base-path=/git --export-all` on port 9418. Service `git.git.svc.cluster.local` is the host the Applications use.
-4. **Argo CD and the `root` Application.** Helm release in the `argocd` namespace, values from [platform/argocd-values.yaml](../../platform/argocd-values.yaml). Then the local `platform/root` chart creates the Application that points at `platform/apps`.
+4. **Argo CD and the `root` Application.** Helm release in the `argocd` namespace, values from [platform/argocd-values.yaml](../../platform/argocd-values.yaml). Then the local `platform/root` chart creates the Application that points at `platform/apps/lite` or `platform/apps/full`, from `observability_profile`.
 5. **Grafana Secret.** [terraform/secrets.tf](../../terraform/secrets.tf) reads `platform/secrets/grafana-admin.yaml` with the SOPS provider, creates the `monitoring` namespace and the `grafana-admin` Secret before kube-prometheus-stack. The Grafana chart uses `existingSecret` and does not generate its own password.
 
 The kubeconfig lands in `.cache/kubeconfig`. State and kubeconfig stay out of Git.
@@ -24,7 +24,7 @@ The kubeconfig lands in `.cache/kubeconfig`. State and kubeconfig stay out of Gi
 
 1. Refuses to continue if there is no commit (`check-commit`). The daemon would serve a repository with no HEAD and Argo CD would not clone.
 2. `docker build` of both images.
-3. `terraform init` and `terraform apply` with `repo_host_path` (this clone's folder), `app_image` (the tag read from the dev overlay), and the kubeconfig path.
+3. `terraform init` and `terraform apply` with `repo_host_path` (this clone's folder), `app_image` (the tag read from the dev overlay), the kubeconfig path, and `observability_profile` (`lite` by default). `make up PROFILE=full` or `make observe-full` points `root` at the full overlay.
 
 The apply finishes when Argo CD and the `root` Application exist. The other Applications keep syncing after that. `make status` lists `SYNC STATUS` and `HEALTH STATUS`. The first kube-prometheus-stack sync is the longest.
 

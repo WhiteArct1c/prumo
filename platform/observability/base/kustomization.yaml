@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - servicemonitor.yaml
   - prometheusrule.yaml
-  - dashboard.yaml

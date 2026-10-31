@@ -2,7 +2,7 @@
 
 ## Context
 
-kube-prometheus-stack covers recent metrics and alerting. Logs, traces, and a place for metrics that last longer than Prometheus's 6 hours were still missing. Grafana's LGTM stack covers the three with Loki, Tempo, and Mimir. The production charts for those projects start dozens of Pods, memcached, and object storage. On kind, Docker Desktop memory is the limit (ADR 0001).
+kube-prometheus-stack covers recent metrics and alerting. That is the `lite` profile: enough to see replicas, process health, and `PrumoDown`. Logs, traces, and a place for metrics that last longer than Prometheus's 6 hours were still missing. Grafana's LGTM stack covers the three with Loki, Tempo, and Mimir. The production charts for those projects start dozens of Pods, memcached, and object storage. On kind, Docker Desktop memory is the limit (ADR 0001). Those three stay off until `PROFILE=full`.
 
 ## Decision
 
@@ -18,7 +18,7 @@ The collector is Grafana Alloy, a Deployment. It reads logs through the Kubernet
 
 ## Consequences
 
-The four new Pods request 1 GiB and, with the cluster up, use about 650 MB. Docker Desktop now needs 8 GB. Grafana's limit went from 512Mi to 1Gi: with Loki and Tempo as datasources, opening a trace went over the limit and the kernel killed the process.
+The four new Pods request 1 GiB and, with the cluster up, use about 650 MB. Docker Desktop needs 8 GB on `full`. `lite` stays on Prometheus and Grafana and fits in about 4 GB. Grafana's limit is 512Mi on `lite` and 1Gi on `full`: with Loki and Tempo as datasources, opening a trace went over 512Mi and the kernel killed the process.
 
 Restarting the Loki, Tempo, or Mimir Pod wipes what it stored. On kind that barely matters: `make down` deletes the cluster and any PVC with it. In production the three would go to object storage (S3, GCS) in distributed mode, with replicas and cache. Mimir would move to the ingest-storage architecture Grafana recommends from 3.0 on. The classic architecture is marked to leave in a future version. Switching needs the `mimir-distributed` chart and Kafka.
 

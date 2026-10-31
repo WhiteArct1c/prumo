@@ -13,16 +13,32 @@ export TF_IN_AUTOMATION := 1
 
 APP_IMAGE ?= $(shell kustomize build deploy/prumo/overlays/dev | awk '/image: / { print $$2; exit }')
 
-.PHONY: up down build status check argocd-password grafana-password check-commit
+PROFILE ?= lite
+
+ifeq ($(filter $(PROFILE),lite full),)
+$(error PROFILE must be lite or full)
+endif
+
+.PHONY: up down build status check argocd-password grafana-password check-commit observe-full
+
+TF_VARS := \
+	-var="repo_host_path=$(HOST_PATH)" \
+	-var="app_image=$(APP_IMAGE)" \
+	-var="kubeconfig_path=$(KUBECONFIG)" \
+	-var="observability_profile=$(PROFILE)"
 
 up: check-commit build
 	mkdir -p .cache
 	touch .git/git-daemon-export-ok
 	terraform -chdir=terraform init
+	terraform -chdir=terraform apply -auto-approve $(TF_VARS)
+
+observe-full: check-commit
 	terraform -chdir=terraform apply -auto-approve \
 		-var="repo_host_path=$(HOST_PATH)" \
 		-var="app_image=$(APP_IMAGE)" \
-		-var="kubeconfig_path=$(KUBECONFIG)"
+		-var="kubeconfig_path=$(KUBECONFIG)" \
+		-var="observability_profile=full"
 
 build:
 	docker build -t "$(APP_IMAGE)" apps/prumo

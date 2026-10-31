@@ -18,3 +18,14 @@ variable "kubeconfig_path" {
   type        = string
   description = "kubeconfig file written by kind. Stays out of Git."
 }
+
+variable "observability_profile" {
+  type        = string
+  description = "lite: Prometheus and Grafana. full: also Loki, Tempo, Mimir, and Alloy."
+  default     = "lite"
+
+  validation {
+    condition     = contains(["lite", "full"], var.observability_profile)
+    error_message = "observability_profile must be lite or full."
+  }
+}

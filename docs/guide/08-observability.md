@@ -1,5 +1,11 @@
 # 8. Observability
 
+## Profiles
+
+`make up` (and `PROFILE=lite`) installs Prometheus, Grafana, Alertmanager, the ServiceMonitor, the `PrumoDown` rule, and the `Prumo` dashboard. That is enough to see replicas and process health.
+
+`make up PROFILE=full` or `make observe-full` also installs Loki, Tempo, Mimir, and Alloy, plus the Loki/Tempo/Mimir datasources, Prometheus `remote_write`, ingress OpenTelemetry, and the logs panel on the dashboard.
+
 ## What it is
 
 The workload already answers `/metrics`. What was missing is something that reads that all the time and something that fires when the Deployment has no replica. kube-prometheus-stack (chart 92.14.0) installs three programs and the CRDs that configure them:
@@ -30,7 +36,7 @@ kube_deployment_status_replicas_available{namespace=~"prumo-.+", deployment="pru
 
 `for: 1m` requires the expression to stay true for a minute before it becomes an alert. That avoids a fire on a restart of a few seconds. The metric comes from kube-state-metrics, which reads the Kubernetes API, not the workload `/metrics`. Available replicas at zero means "the Deployment has no Ready Pod". The process can be up and the probe can still have failed.
 
-**Dashboard `Prumo`.** A ConfigMap with the label `grafana_dashboard: "1"`. A sidecar in the Grafana Pod copies that JSON to `/tmp/dashboards/prumo.json` and reloads the list. `grafana.ini` points the home page at that file and redirects `/` to `/d/prumo/prumo`. Without that, Grafana 13 opens the "Welcome to Grafana" screen, which shows no panel, even though the dashboards exist under Dashboards.
+**Dashboard `Prumo`.** A ConfigMap with the label `grafana_dashboard: "1"`. A sidecar in the Grafana Pod copies that JSON to `/tmp/dashboards/prumo.json` and reloads the list. `grafana.ini` points the home page at that file and redirects `/` to `/d/prumo/prumo`. Without that, Grafana 13 opens the "Welcome to Grafana" screen, which shows no panel, even though the dashboards exist under Dashboards. The `lite` dashboard stops at Prometheus panels. The logs panel is on `full`.
 
 The panels read the `prometheus` datasource:
 

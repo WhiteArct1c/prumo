@@ -1,6 +1,6 @@
 # Demo walkthrough
 
-Prerequisite: `make up` finished and `make check` answers `ok` on both hosts.
+Prerequisite: `make up` finished and `make check` answers `ok` on both hosts. Steps 1–4 work on `lite`. Step 5 needs `make up PROFILE=full` or `make observe-full`.
 
 ## 1. Two environments, the same image
 
@@ -50,7 +50,9 @@ kubectl -n prumo-prod scale deployment/prumo --replicas=2
 
 If selfHeal already fixed it, the command only confirms the number.
 
-## 5. From the log to the trace
+## 5. From the log to the trace (`full` only)
+
+Skip this on `lite`. There is no Loki or Tempo.
 
 Make a few requests through ingress:
 

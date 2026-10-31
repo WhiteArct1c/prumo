@@ -75,6 +75,12 @@ jobs:
             kustomize build "deploy/prumo/overlays/${overlay}" \
               | kubeconform -strict -ignore-missing-schemas -kubernetes-version 1.32.0 -summary
           done
+          for profile in lite full; do
+            kustomize build "platform/apps/${profile}" \
+              | kubeconform -strict -ignore-missing-schemas -kubernetes-version 1.32.0 -summary
+            kustomize build "platform/observability/${profile}" \
+              | kubeconform -strict -ignore-missing-schemas -kubernetes-version 1.32.0 -summary
+          done
 
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 

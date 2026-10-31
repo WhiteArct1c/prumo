@@ -7,7 +7,7 @@ Prumo is a local Kubernetes platform you can stand up on a laptop to see how an 
 | Build and security | ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white) ![Trivy](https://img.shields.io/badge/Trivy-action%200.35.0-1904DA) ![Kyverno](https://img.shields.io/badge/Kyverno-chart%203.9.2-1E88E5) ![SOPS](https://img.shields.io/badge/SOPS-3.13.3-555555) ![cert-manager](https://img.shields.io/badge/cert--manager-v1.21.3-0A5CBF) |
 | Observability     | ![Prometheus](https://img.shields.io/badge/Prometheus-3.5.0-E6522C?logo=prometheus&logoColor=white) ![Grafana](https://img.shields.io/badge/Grafana-13-F46800?logo=grafana&logoColor=white) ![Loki](https://img.shields.io/badge/Loki-chart%2020.0.3-F46800?logo=grafana&logoColor=white) ![Tempo](https://img.shields.io/badge/Tempo-chart%203.2.1-F46800?logo=grafana&logoColor=white) ![Mimir](https://img.shields.io/badge/Mimir-3.2.3-F46800?logo=grafana&logoColor=white) ![Alloy](https://img.shields.io/badge/Alloy-chart%201.14.4-F46800?logo=grafana&logoColor=white) |
 
-`make up` brings up a kind cluster with the delivery path already wired, from commit to `dev` and `prod`, plus metrics, logs, traces, and an alert. The API in [`apps/prumo`](apps/prumo) is a 75-line Python example. Another service joins the same cluster by following [guide 9](docs/guide/09-another-application.md).
+`make up` brings up a kind cluster with the delivery path already wired, from commit to `dev` and `prod`. The default observability profile is `lite`: Prometheus, Grafana, and an alert. `make up PROFILE=full` adds Loki, Tempo, Mimir, and Alloy for logs and traces. The API in [`apps/prumo`](apps/prumo) is a 75-line Python example. Another service joins the same cluster by following [guide 9](docs/guide/09-another-application.md).
 
 Terraform creates the cluster and installs Argo CD. From then on, Argo CD is the one that applies, reading Git. GitHub Actions builds the image, runs Trivy, and writes the new tag back to Git. The runner never runs `kubectl apply` on a live cluster, and a file that was not committed never reaches the cluster.
 
@@ -46,7 +46,7 @@ Argo CD reads a `git daemon` inside the cluster that serves this clone's `.git`.
 
 You need:
 
-- Docker Desktop with at least 8 GB of memory
+- Docker Desktop with at least 4 GB of memory (`lite`, the default). Use 8 GB for `PROFILE=full`
 - `make`, `terraform`, `kind`, `kubectl`, `helm`, `kustomize`, `sops`, and `age` on `PATH`
 - ports 8080 and 8443 free
 - this line in your hosts file (`C:\Windows\System32\drivers\etc\hosts` on Windows, `/etc/hosts` on Linux and macOS):
@@ -58,13 +58,15 @@ You need:
 On Windows, `make` uses the bash that ships with Git for Windows.
 
 ```bash
-make up       # build the images, create the cluster, install Argo CD
-make status   # Applications and Pods
-make check    # /healthz on dev and prod
-make down     # tear it all down, cluster included
+make up              # lite: Prometheus and Grafana, no Loki/Tempo/Mimir
+make up PROFILE=full # also Loki, Tempo, Mimir, and Alloy
+make observe-full    # add the full stack to a cluster that is already up
+make status          # Applications and Pods
+make check           # /healthz on dev and prod
+make down            # tear it all down, cluster included
 ```
 
-`make up` returns when Argo CD is up. Applications keep syncing after that. kube-prometheus-stack is the slowest.
+`make up` returns when Argo CD is up. Applications keep syncing after that. kube-prometheus-stack is the slowest. `lite` is the default: the Grafana home page shows replicas, process health, and the `PrumoDown` alert. Logs, traces, and 7-day metrics need `PROFILE=full`.
 
 Ports 8080 and 8443 bind to `127.0.0.1`. Another machine on the network cannot reach Grafana or Argo CD.
 
@@ -79,30 +81,30 @@ The Grafana password is encrypted with SOPS. The key that opens the file is comm
 
 ## Walkthrough
 
-The [demo](docs/demo.md) takes about five minutes. It opens both environments, shows the Applications `Synced` in Argo CD, and tries to apply a Pod that Kyverno rejects. Then it scales `prumo-prod` down so the `PrumoDown` alert fires, and follows a request from a Loki log line to the Tempo trace.
+The [demo](docs/demo.md) takes about five minutes. It opens both environments, shows the Applications `Synced` in Argo CD, and tries to apply a Pod that Kyverno rejects. Then it scales `prumo-prod` down so the `PrumoDown` alert fires. The log-to-trace step needs `PROFILE=full`.
 
 ## What runs in the cluster
 
-Terraform creates one Application, `root`, which reads [`platform/apps/`](platform/apps). Each file in that directory is another Application:
+Terraform creates one Application, `root`, which reads [`platform/apps/lite`](platform/apps/lite) or [`platform/apps/full`](platform/apps/full). Each file that overlay lists is another Application:
 
-| Application | What it does |
-|---|---|
-| `ingress-nginx` | Takes traffic on port 8080, routes by `Host`, and starts a trace per request |
-| `cert-manager` and `certs` | Issue the `*.prumo.test` certificate from a local CA |
-| `kyverno` and `policies` | Reject a Pod with no `limits`, a `latest` tag, or root in `prumo-dev` and `prumo-prod` |
-| `kube-prometheus-stack` | Prometheus, Alertmanager, and Grafana |
-| `mimir` | Keeps metrics for 7 days |
-| `loki` | Keeps logs for 72 hours |
-| `tempo` | Keeps traces for 24 hours |
-| `alloy` | Ships Pod stdout to Loki and ingress traces to Tempo |
-| `observability` | ServiceMonitor, `PrumoDown` alert, and the `Prumo` dashboard |
-| `prumo-dev` and `prumo-prod` | The API, same image in both environments |
+| Application | Profile | What it does |
+|---|---|---|
+| `ingress-nginx` | both | Takes traffic on port 8080 and routes by `Host`. On `full` it also starts a trace per request |
+| `cert-manager` and `certs` | both | Issue the `*.prumo.test` certificate from a local CA |
+| `kyverno` and `policies` | both | Reject a Pod with no `limits`, a `latest` tag, or root in `prumo-dev` and `prumo-prod` |
+| `kube-prometheus-stack` | both | Prometheus, Alertmanager, and Grafana |
+| `observability` | both | ServiceMonitor, `PrumoDown` alert, and the `Prumo` dashboard |
+| `prumo-dev` and `prumo-prod` | both | The API, same image in both environments |
+| `mimir` | `full` | Keeps metrics for 7 days |
+| `loki` | `full` | Keeps logs for 72 hours |
+| `tempo` | `full` | Keeps traces for 24 hours |
+| `alloy` | `full` | Ships Pod stdout to Loki and ingress traces to Tempo |
 
-The API has no OpenTelemetry SDK. The trace starts at ingress-nginx, which forwards the `traceparent` header, and the API writes `trace_id` at the end of each log line. That ID is how Grafana jumps from the log to the trace. [Guide 8](docs/guide/08-observability.md) walks the full path.
+The API has no OpenTelemetry SDK. On `full`, the trace starts at ingress-nginx, which forwards the `traceparent` header, and the API writes `trace_id` at the end of each log line. That ID is how Grafana jumps from the log to the trace. [Guide 8](docs/guide/08-observability.md) walks the full path.
 
 ## CI
 
-The [`ci`](.github/workflows/ci.yml) workflow runs on every push and pull request. It checks Terraform, runs the overlays through `kubeconform`, and fails the image if Trivy finds a HIGH or CRITICAL vulnerability that already has a fix. Then it brings up a clean kind cluster, where Kyverno must reject the invalid Pod and the `dev` overlay must answer `/healthz`.
+The [`ci`](.github/workflows/ci.yml) workflow runs on push and pull request, except documentation-only changes. It checks Terraform, runs the overlays through `kubeconform`, and fails the image if Trivy finds a HIGH or CRITICAL vulnerability that already has a fix. Then it brings up a clean kind cluster, where Kyverno must reject the invalid Pod and the `dev` overlay must answer `/healthz`.
 
 On `main`, a third job, `release`, runs after the other two pass. If `apps/prumo` changed, it publishes the image to GHCR with that tree hash as the tag and commits the tag in `kustomization.yaml`. Argo CD does the deploy. A clone does not need that image: `make up` builds it and loads it into the node ([guide 6](docs/guide/06-ci.md)).
 
@@ -116,7 +118,8 @@ prumo/
 │   └── overlays/        dev (1 replica) and prod (2 replicas)
 ├── platform/
 │   ├── root/            Chart that creates the root Application
-│   ├── apps/            One Application per file: the list Argo CD reconciles
+│   ├── apps/            lite and full overlays: the list Argo CD reconciles
+│   ├── lgtm/            Loki, Tempo, Mimir, and Alloy Applications (`full` only)
 │   ├── certs/           Local ClusterIssuer
 │   ├── mimir/           Monolithic Mimir, no chart
 │   ├── observability/   ServiceMonitor, PrometheusRule, and dashboard
@@ -153,7 +156,7 @@ The ADRs cover the choices that weigh the most:
 |---|---|
 | `make up` stops with "Argo CD only reads commits" | The repository has no commit yet |
 | A change does not show up in the cluster | The file was not committed |
-| Pods in `monitoring` restarting or `Pending` | Docker Desktop has less than 8 GB |
+| Pods in `monitoring` restarting or `Pending` | Docker Desktop is short on memory. `lite` wants about 4 GB, `full` wants 8 GB |
 | `*.prumo.test` addresses do not open | The hosts line is missing, or the port is not 8080 |
 
 ## Limits

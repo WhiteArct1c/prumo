@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: git://git.git.svc.cluster.local/prumo
     targetRevision: HEAD
-    path: platform/observability
+    path: platform/observability/full
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

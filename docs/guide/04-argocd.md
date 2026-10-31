@@ -14,7 +14,7 @@ Every 30 seconds (`timeout.reconciliation` in [platform/argocd-values.yaml](../.
 
 ## App-of-apps
 
-Terraform installs the Argo CD Helm chart (version 10.11.6) and a single Application, `root`, from the local chart [platform/root](../../platform/root). `root` points at the [platform/apps](../../platform/apps) directory. Each file there is another Application. `root` does not hold the workload Deployment. It holds the list of what should exist.
+Terraform installs the Argo CD Helm chart (version 10.11.6) and a single Application, `root`, from the local chart [platform/root](../../platform/root). `root` points at [platform/apps/lite](../../platform/apps/lite) or [platform/apps/full](../../platform/apps/full). Each file that overlay lists is another Application. `root` does not hold the workload Deployment. It holds the list of what should exist. `mimir`, `loki`, `tempo`, and `alloy` are only on `full`.
 
 | Application | Source | Wave | What it installs |
 |---|---|---|---|
@@ -24,9 +24,10 @@ Terraform installs the Argo CD Helm chart (version 10.11.6) and a single Applica
 | `policies` | Git, `policies/` | 0 | the three ClusterPolicies |
 | `certs` | Git, `platform/certs/` | 1 | the local ClusterIssuer |
 | `kube-prometheus-stack` | chart 92.14.0 | 1 | Prometheus, Grafana, Alertmanager |
-| `observability` | Git, `platform/observability/` | 2 | ServiceMonitor, rule, and dashboard |
+| `observability` | Git, `platform/observability/lite` or `full` | 2 | ServiceMonitor, rule, and dashboard |
 | `prumo-dev` | Git, dev overlay | 3 | the workload |
 | `prumo-prod` | Git, prod overlay | 3 | the workload |
+| `mimir`, `loki`, `tempo`, `alloy` | `full` only | 1 | the LGTM stores and the collector |
 
 The `argocd.argoproj.io/sync-wave` annotation orders the sync. A lower wave applies first. Ingress exists before any application Ingress. The policies exist before the workload Pods. A wave waits for the previous Application to become healthy, not only applied.
 
