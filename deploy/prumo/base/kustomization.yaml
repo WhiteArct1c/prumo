@@ -2,13 +2,13 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: prumo
 resources:
-  - namespace.yaml
-  - deployment.yaml
-  - service.yaml
-  - ingress.yaml
-  - networkpolicy.yaml
-  - certificate.yaml
+- namespace.yaml
+- deployment.yaml
+- service.yaml
+- ingress.yaml
+- networkpolicy.yaml
+- certificate.yaml
 images:
-  - name: prumo
-    newName: prumo
-    newTag: local
+- name: prumo
+  newName: ghcr.io/whitearct1c/prumo
+  newTag: 03dfb29360dff36984c33c74fbf2d1fab6f34c69
