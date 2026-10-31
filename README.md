@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/prumo-logo-white.png" alt="Prumo" width="420">
+  <img src="docs/assets/prumo-logo-white.png" alt="Prumo" width="100%">
 </p>
 
 # Prumo
