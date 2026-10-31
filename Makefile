@@ -29,7 +29,7 @@ build:
 	docker build -t prumo-git:local platform/git
 
 check-commit:
-	@git rev-parse --verify HEAD >/dev/null 2>&1 || { echo "O Argo CD so le commit. Crie o primeiro commit e rode make up de novo."; exit 1; }
+	@git rev-parse --verify HEAD >/dev/null 2>&1 || { echo "Argo CD only reads commits. Create the first commit and run make up again."; exit 1; }
 
 down:
 	-terraform -chdir=terraform destroy -auto-approve \
