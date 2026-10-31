@@ -32,11 +32,8 @@ check-commit:
 	@git rev-parse --verify HEAD >/dev/null 2>&1 || { echo "Argo CD only reads commits. Create the first commit and run make up again."; exit 1; }
 
 down:
-	-terraform -chdir=terraform destroy -auto-approve \
-		-var="repo_host_path=$(HOST_PATH)" \
-		-var="app_image=$(APP_IMAGE)" \
-		-var="kubeconfig_path=$(KUBECONFIG)"
 	-kind delete cluster --name prumo
+	rm -f terraform/terraform.tfstate terraform/terraform.tfstate.*
 
 status:
 	kubectl get applications -n argocd

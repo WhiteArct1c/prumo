@@ -28,6 +28,6 @@ The kubeconfig lands in `.cache/kubeconfig`. State and kubeconfig stay out of Gi
 
 The apply finishes when Argo CD and the `root` Application exist. The other Applications keep syncing after that. `make status` lists `SYNC STATUS` and `HEALTH STATUS`. The first kube-prometheus-stack sync is the longest.
 
-`make down` runs `terraform destroy` and then `kind delete cluster --name prumo`. Both have `-` in the Makefile: an error on destroy does not stop the attempt to delete the node.
+`make down` deletes the kind cluster and removes the local Terraform state. It does not run `terraform destroy`: uninstalling Helm and Argo CD hits Application finalizers and hangs, and the node delete already drops every object. The next `make up` starts from an empty state. `kind delete` has `-` so a missing cluster does not fail the target.
 
 `TF_IN_AUTOMATION=1` turns off Terraform's colored prompt. The apply uses `-auto-approve` because this state is local and disposable.
