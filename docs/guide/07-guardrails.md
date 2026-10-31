@@ -6,7 +6,7 @@ Kyverno decides whether an object may be written to the API. NetworkPolicy decid
 
 ## Kyverno
 
-Kyverno is an admission webhook. Chart 3.9.2 starts four controllers in the `kyverno` namespace: admission, background, cleanup, and reports. Admission registers a `ValidatingWebhookConfiguration`. When the API server receives a Pod, it pauses the write and asks Kyverno. `validationFailureAction: Enforce` makes the API server return 403. `Audit` would only record.
+Kyverno is an admission webhook. The chart starts four controllers in the `kyverno` namespace: admission, background, cleanup, and reports. Admission registers a `ValidatingWebhookConfiguration`. When the API server receives a Pod, it pauses the write and asks Kyverno. `validationFailureAction: Enforce` makes the API server return 403. `Audit` would only record.
 
 The policies are `ClusterPolicy` objects (group `kyverno.io/v1`) in [policies](../../policies). Each rule has a `match` restricted to the `prumo-dev` and `prumo-prod` namespaces. A third-party chart, in its own namespace, does not go through these rules. The fence is on the service this repository ships, not on ingress-nginx or Prometheus.
 
@@ -24,7 +24,7 @@ Proof, with the cluster up:
 kubectl apply -f policies/fixtures/invalid-pod.yaml
 ```
 
-The manifest asks for `image: nginx:latest`, declares no resources, and has no securityContext, in the `prumo-dev` namespace. The API server response cites all three rules. The file is not in the policies `kustomization.yaml`. If it were, Argo CD would try to apply it forever and the `policies` Application would stay Degraded.
+The manifest asks for `image: prumo:latest`, declares no resources, and has no securityContext, in the `prumo-dev` namespace. The API server response cites all three rules. The file is not in the policies `kustomization.yaml`. If it were, Argo CD would try to apply it forever and the `policies` Application would stay Degraded.
 
 ## NetworkPolicy
 

@@ -20,7 +20,7 @@ Argo CD reads a `git daemon` inside the cluster, not GitHub ([ADR 0006](adr/0006
 
 - The kind node publishes 8080 and 8443 on loopback only.
 - The node mounts this clone's `.git`, read-only. `terraform.tfstate` and the admin kubeconfig stay on the host.
-- Every CI action is pinned to a commit SHA. zizmor 1.31.1, by digest, fails a loose pin, a persisted checkout credential, and triggers such as `pull_request_target`.
+- Every CI action is pinned to a commit SHA. zizmor, by digest, fails a loose pin, a persisted checkout credential, and triggers such as `pull_request_target`.
 - kustomize and kubeconform go through a SHA-256 checksum before they land on `PATH`.
 - No checkout leaves the token in `.git/config`. The `release` job receives it only on the last step.
 - The `prumo` AppProject may apply only `Namespace`, `Deployment`, `Service`, `Ingress`, `NetworkPolicy`, and `Certificate` in `prumo-dev` and `prumo-prod`. `default` has no source and no destination.

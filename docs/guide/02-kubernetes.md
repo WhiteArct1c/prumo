@@ -4,7 +4,7 @@
 
 Kubernetes is a state controller. You write objects to the API (`https://kubernetes.default.svc` inside the cluster, port 6443 on the node from your machine). Each object has a `spec` (what you asked for) and a `status` (what the controller managed to do). The kubelet, on the node, creates the containers. If a Pod dies, the Deployment creates another until `spec.replicas` matches the number of Ready Pods.
 
-This cluster is kind: a full Kubernetes node inside a Docker container, image `kindest/node:v1.32.2`. The API, etcd, the scheduler, and the kubelet run on that single node. It is not a production cluster. It is the same object model (Deployment, Service, Ingress) a managed cluster uses.
+This cluster is kind: a full Kubernetes node inside a Docker container, image `kindest/node`. The tag is a README shield, not repeated here. The API, etcd, the scheduler, and the kubelet run on that single node. It is not a production cluster. It is the same object model (Deployment, Service, Ingress) a managed cluster uses.
 
 The kubeconfig `kubectl` reads is in `.cache/kubeconfig`. It points at the API server published by the node container.
 
@@ -14,7 +14,7 @@ The base lives in [deploy/prumo/base](../../deploy/prumo/base). Each file is one
 
 **Namespace** (`prumo` in the base; `prumo-dev` and `prumo-prod` after Kustomize). It is the name, RBAC, and NetworkPolicy boundary. Two Deployments with the same name can coexist if they sit in different namespaces.
 
-**Deployment.** Asks for 1 replica in the base. The Pod template loads `prumo:local` with `imagePullPolicy: IfNotPresent`. containerd uses the image that `kind load` put on the node and only asks a registry if it is missing. The container listens on 8080. Two HTTP probes on `/healthz`:
+**Deployment.** Asks for 1 replica in the base. The container spec names `image: prumo:local` with `imagePullPolicy: IfNotPresent`. That string is the Kustomize image name, not the image the cluster runs. The base `images` block rewrites it before apply. After the first release the block is `ghcr.io/<owner>/prumo:<tag>` in [deploy/prumo/base/kustomization.yaml](../../deploy/prumo/base/kustomization.yaml). `make up` builds that tag from this tree and loads it into the node, so containerd does not ask a registry unless the image is missing. The container listens on 8080. Two HTTP probes on `/healthz`:
 
 - readiness, every 10s: while it fails, the Service does not send traffic to that Pod
 - liveness, every 20s: if it fails, the kubelet kills the container and the Deployment starts another

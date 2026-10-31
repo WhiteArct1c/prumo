@@ -28,4 +28,4 @@ kustomize build deploy/prumo/overlays/prod
 
 Check three lines in the prod output: `replicas: 2`, `value: prod`, and `host: prod.prumo.test`. If the patch did not apply, the object name in the patch does not match the base. Kustomize ignores a file silently only when it is not listed. If it is listed and the name is wrong, the build fails.
 
-CI runs that build and pipes the output through kubeconform, against the Kubernetes 1.32 schemas. An object with a made-up field breaks the pipeline before it exists in the cluster.
+CI runs that build and pipes the output through kubeconform, against the Kubernetes schemas pinned in the workflow. An object with a made-up field breaks the pipeline before it exists in the cluster.

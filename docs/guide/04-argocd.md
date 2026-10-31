@@ -14,20 +14,20 @@ Every 30 seconds (`timeout.reconciliation` in [platform/argocd-values.yaml](../.
 
 ## App-of-apps
 
-Terraform installs the Argo CD Helm chart (version 10.11.6) and a single Application, `root`, from the local chart [platform/root](../../platform/root). `root` points at [platform/apps/lite](../../platform/apps/lite) or [platform/apps/full](../../platform/apps/full). Each file that overlay lists is another Application. `root` does not hold the workload Deployment. It holds the list of what should exist. `mimir`, `loki`, `tempo`, and `alloy` are only on `full`.
+Terraform installs the Argo CD Helm chart and a single Application, `root`, from the local chart [platform/root](../../platform/root). `root` points at [platform/apps/lite](../../platform/apps/lite) or [platform/apps/full](../../platform/apps/full). Each file that overlay lists is another Application. `root` does not hold the workload Deployment. It holds the list of what should exist. `mimir`, `loki`, `tempo`, and `alloy` are only on `full`.
 
 | Application | Source | Wave | What it installs |
 |---|---|---|---|
-| `ingress-nginx` | chart 4.15.1 | -3 | the proxy that publishes the hosts |
-| `kyverno` | chart 3.9.2 | -2 | the admission webhook |
-| `cert-manager` | chart v1.21.3 | -2 | the certificate issuer |
-| `policies` | Git, `policies/` | 0 | the three ClusterPolicies |
-| `certs` | Git, `platform/certs/` | 1 | the local ClusterIssuer |
-| `kube-prometheus-stack` | chart 92.14.0 | 1 | Prometheus, Grafana, Alertmanager |
+| `ingress-nginx` | Helm chart | -3 | the proxy that publishes the hosts |
+| `kyverno` | Helm chart | -2 | the admission webhook |
+| `cert-manager` | Helm chart | -2 | the certificate issuer |
+| `certs` | Git, `platform/certs/` | -1 | the local ClusterIssuer |
+| `kube-prometheus-stack` | Helm chart | 0 | Prometheus, Grafana, Alertmanager |
+| `policies` | Git, `policies/` | 1 | the three ClusterPolicies |
+| `mimir`, `loki`, `tempo`, `alloy` | `full` only | 1 | the LGTM stores and the collector |
 | `observability` | Git, `platform/observability/lite` or `full` | 2 | ServiceMonitor, rule, and dashboard |
 | `prumo-dev` | Git, dev overlay | 3 | the workload |
 | `prumo-prod` | Git, prod overlay | 3 | the workload |
-| `mimir`, `loki`, `tempo`, `alloy` | `full` only | 1 | the LGTM stores and the collector |
 
 The `argocd.argoproj.io/sync-wave` annotation orders the sync. A lower wave applies first. Ingress exists before any application Ingress. The policies exist before the workload Pods. A wave waits for the previous Application to become healthy, not only applied.
 
