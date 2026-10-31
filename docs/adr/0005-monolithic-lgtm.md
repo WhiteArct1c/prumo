@@ -18,7 +18,7 @@ The collector is Grafana Alloy, a Deployment. It reads logs through the Kubernet
 
 ## Consequences
 
-The four new Pods request 1 GiB and, with the cluster up, use about 650 MB. Docker Desktop needs 8 GB on `full`. `lite` stays on Prometheus and Grafana and fits in about 4 GB. Grafana's limit is 512Mi on `lite` and 1Gi on `full`: with Loki and Tempo as datasources, opening a trace went over 512Mi and the kernel killed the process.
+`lite` is already heavy: kube-prometheus-stack, Argo CD, ingress, Kyverno, and cert-manager. On a measured `make up`, the kind node sat at about **5.3 GiB** on `lite` and **6.5 GiB** on `full`. The four LGTM Pods add about 1 GiB, not a small-laptop profile. Give Docker Desktop **8 GB for either profile**. 4 GB is not enough even for `lite`. Grafana's limit is 1Gi on both profiles: 512Mi on `lite` was enough to start, then the kubelet sent SIGKILL (exit 137) when the UI loaded the dashboard.
 
 Restarting the Loki, Tempo, or Mimir Pod wipes what it stored. On kind that barely matters: `make down` deletes the cluster and any PVC with it. In production the three would go to object storage (S3, GCS) in distributed mode, with replicas and cache. Mimir would move to the ingest-storage architecture Grafana recommends from 3.0 on. The classic architecture is marked to leave in a future version. Switching needs the `mimir-distributed` chart and Kafka.
 
