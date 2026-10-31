@@ -47,6 +47,7 @@ Argo CD reads a `git daemon` inside the cluster that serves this clone's `.git`.
 You need:
 
 - Docker Desktop with **8 GB of memory**, even on `lite`. The kind node alone used about 5.3 GiB on `lite` and 6.5 GiB on `full`. kube-prometheus-stack (Prometheus, Grafana, Alertmanager) is already heavy. Turning off Loki, Tempo, and Mimir saves about 1 GiB, not half the laptop. 4 GB is not enough.
+- On Windows, that 5–6 GiB is not what Task Manager shows. Docker Desktop runs in a WSL2 VM. `vmmemWSL` is the whole VM: often around 13 GB, because WSL takes about half the machine when there is no `.wslconfig`, and the rest is page cache. Pod memory limits do not reserve those 13 GB. If two people run the same `lite` profile and one sees 6 GiB while the other sees 13 GB, the cluster is the same; WSL and Windows are the extra.
 - `make`, `terraform`, `kind`, `kubectl`, `helm`, `kustomize`, `sops`, and `age` on `PATH`
 - ports 8080 and 8443 free
 - this line in your hosts file (`C:\Windows\System32\drivers\etc\hosts` on Windows, `/etc/hosts` on Linux and macOS):
@@ -163,6 +164,7 @@ The ADRs cover the choices that weigh the most:
 | `make up` stops with "Argo CD only reads commits" | The repository has no commit yet |
 | A change does not show up in the cluster | The file was not committed |
 | Pods in `monitoring` restarting or `Pending` | Docker Desktop has less than 8 GB. `lite` already used ~5.3 GiB in the kind node |
+| Task Manager shows ~13 GB for Docker / WSL | That is `vmmemWSL`, the whole VM, not the kind node. `lite` is still ~5–6 GiB. Limits do not reserve 13 GB. |
 | `*.prumo.test` addresses do not open | The hosts line is missing, or the port is not 8080 |
 
 ## Limits
