@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/prumo-logo-white.png" alt="Prumo" width="420">
+</p>
+
 # Prumo
 
 A local Kubernetes platform you can stand up on a laptop to see how an application behaves in a cluster that already looks like a cloud one: GitOps, admission policies, TLS, and observability.
@@ -7,7 +11,7 @@ A local Kubernetes platform you can stand up on a laptop to see how an applicati
 | Build and security | ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white) ![Trivy](https://img.shields.io/badge/Trivy-action%200.35.0-1904DA) ![Kyverno](https://img.shields.io/badge/Kyverno-chart%203.9.2-1E88E5) ![SOPS](https://img.shields.io/badge/SOPS-3.13.3-555555) ![cert-manager](https://img.shields.io/badge/cert--manager-v1.21.3-0A5CBF) |
 | Observability     | ![Prometheus](https://img.shields.io/badge/Prometheus-3.5.0-E6522C?logo=prometheus&logoColor=white) ![Grafana](https://img.shields.io/badge/Grafana-13-F46800?logo=grafana&logoColor=white) ![Loki](https://img.shields.io/badge/Loki-chart%2020.0.3-F46800?logo=grafana&logoColor=white) ![Tempo](https://img.shields.io/badge/Tempo-chart%203.2.1-F46800?logo=grafana&logoColor=white) ![Mimir](https://img.shields.io/badge/Mimir-3.2.3-F46800?logo=grafana&logoColor=white) ![Alloy](https://img.shields.io/badge/Alloy-chart%201.14.4-F46800?logo=grafana&logoColor=white) |
 
-`make up` brings up a kind cluster with the delivery path already wired, from commit to `dev` and `prod`, plus metrics, logs, traces, and an alert. The API in [`apps/prumo`](apps/prumo) is a 76-line Python example. Another service joins the same cluster by following [guide 9](docs/guide/09-another-application.md).
+`make up` brings up a kind cluster with the delivery path already wired, from commit to `dev` and `prod`, plus metrics, logs, traces, and an alert. The API in [`apps/prumo`](apps/prumo) is a 75-line Python example. Another service joins the same cluster by following [guide 9](docs/guide/09-another-application.md).
 
 Terraform creates the cluster and installs Argo CD. From then on, Argo CD is the one that applies, reading Git. GitHub Actions builds the image, runs Trivy, and writes the new tag back to Git. The runner never runs `kubectl apply` on a live cluster, and a file that was not committed never reaches the cluster.
 
@@ -79,7 +83,7 @@ The Grafana password is encrypted with SOPS. The key that opens the file is comm
 
 ## Walkthrough
 
-The [demo](docs/demo.md) takes about five minutes. It opens both environments, shows the Applications `Synced` in Argo CD, and tries to apply a Pod that Kyverno rejects. Then it scales `prumo-prod` down so the `PrumoForaDoAr` alert fires, and follows a request from a Loki log line to the Tempo trace.
+The [demo](docs/demo.md) takes about five minutes. It opens both environments, shows the Applications `Synced` in Argo CD, and tries to apply a Pod that Kyverno rejects. Then it scales `prumo-prod` down so the `PrumoDown` alert fires, and follows a request from a Loki log line to the Tempo trace.
 
 ## What runs in the cluster
 
@@ -95,7 +99,7 @@ Terraform creates one Application, `root`, which reads [`platform/apps/`](platfo
 | `loki` | Keeps logs for 72 hours |
 | `tempo` | Keeps traces for 24 hours |
 | `alloy` | Ships Pod stdout to Loki and ingress traces to Tempo |
-| `observability` | ServiceMonitor, `PrumoForaDoAr` alert, and the `Prumo` dashboard |
+| `observability` | ServiceMonitor, `PrumoDown` alert, and the `Prumo` dashboard |
 | `prumo-dev` and `prumo-prod` | The API, same image in both environments |
 
 The API has no OpenTelemetry SDK. The trace starts at ingress-nginx, which forwards the `traceparent` header, and the API writes `trace_id` at the end of each log line. That ID is how Grafana jumps from the log to the trace. [Guide 8](docs/guide/08-observability.md) walks the full path.
