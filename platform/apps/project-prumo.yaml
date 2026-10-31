@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: prumo
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-4"
+spec:
+  description: O workload. Só os namespaces dele e só os tipos que o overlay gera.
+  sourceRepos:
+    - git://git.git.svc.cluster.local/prumo
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: prumo-dev
+    - server: https://kubernetes.default.svc
+      namespace: prumo-prod
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: Service
+    - group: apps
+      kind: Deployment
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+    - group: cert-manager.io
+      kind: Certificate

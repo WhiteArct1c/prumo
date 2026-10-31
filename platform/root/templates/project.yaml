@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform
+  namespace: argocd
+spec:
+  description: Peças da plataforma e a própria root. Instalam CRD, webhook e RBAC, então o projeto é do tamanho de um admin. O que ele limita é de onde vêm os manifests.
+  sourceRepos:
+    - git://git.git.svc.cluster.local/prumo
+    - https://kubernetes.github.io/ingress-nginx
+    - https://charts.jetstack.io
+    - https://kyverno.github.io/kyverno/
+    - https://prometheus-community.github.io/helm-charts
+    - https://grafana.github.io/helm-charts
+    - https://grafana-community.github.io/helm-charts
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: "*"
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"

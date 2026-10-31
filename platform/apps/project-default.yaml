@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: default
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-4"
+spec:
+  # O Argo CD cria o default aceitando tudo e não deixa apagar. Nada usa este
+  # projeto, então ele fica sem origem, sem destino e sem tipo permitido.
+  description: Travado. Toda Application declara platform ou prumo.
+  sourceRepos: []
+  sourceNamespaces: []
+  destinations: []
+  clusterResourceWhitelist: []
+  namespaceResourceBlacklist:
+    - group: "*"
+      kind: "*"
