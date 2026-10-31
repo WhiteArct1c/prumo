@@ -104,6 +104,10 @@ jobs:
         with:
           cluster_name: prumo
           node_image: kindest/node:v1.32.2
+          # v1.12.0 defaults to kind v0.26.0, which cannot read the
+          # containerd config in kindest/node:v1.32.2 ("failed to detect
+          # containerd snapshotter" on kind load). v0.33.0 is the CLI on PATH.
+          version: v0.33.0
 
       - name: Build and load the image the overlay asks for
         run: |
