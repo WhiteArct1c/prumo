@@ -19,11 +19,11 @@ The current ClusterPolicies only watch `prumo-dev` and `prumo-prod`. A new names
 
 3. **Image on the node.** A `local` tag exists in no registry. Run `kind load docker-image prumo-<name>:local --name prumo` and use `imagePullPolicy: IfNotPresent`. `make up` only loads `prumo:local` and `prumo-git:local`. A new image needs this `kind load` after every `make up`, or a `terraform_data` like the one in [terraform/cluster.tf](../../terraform/cluster.tf).
 
-4. **Application.** A new file in `platform/apps/`, on the model of [prumo-dev.yaml](../../platform/apps/prumo-dev.yaml): `repoURL: git://git.git.svc.cluster.local/prumo`, `path` on the overlay, `targetRevision: HEAD`, `syncPolicy.automated` with `prune` and `selfHeal`, wave `"3"` so it comes up after ingress and the policies. `root` already points at the whole directory. The new file enters on the next reconciliation. Terraform does not need to change.
+4. **Application.** A new file in [platform/apps/common](../../platform/apps/common), on the model of [prumo-dev.yaml](../../platform/apps/common/prumo-dev.yaml): `repoURL: git://git.git.svc.cluster.local/prumo`, `path` on the overlay, `targetRevision: HEAD`, `syncPolicy.automated` with `prune` and `selfHeal`, wave `"3"` so it comes up after ingress and the policies. Both `lite` and `full` include `common/`. Add the filename to [platform/apps/common/kustomization.yaml](../../platform/apps/common/kustomization.yaml). The AppProject `prumo` only allows the `prumo-dev` and `prumo-prod` namespaces. A new namespace also needs a destination on that AppProject, or the Application should land in one of those two namespaces. Terraform does not need to change.
 
 5. **Commit.** `git add` and `git commit`. Within about 30 seconds the Application shows up in `kubectl get applications -n argocd`. `OutOfSync` with a manifest error is the YAML. `ImagePullBackOff` is the image that was not loaded into the node.
 
-6. **Metrics, if the API exposes `/metrics`.** A ServiceMonitor in `platform/observability`, selector on the new Service label. Without that object Prometheus does not scrape the endpoint, even if it answers.
+6. **Metrics, if the API exposes `/metrics`.** A ServiceMonitor in [platform/observability/base](../../platform/observability/base), selector on the new Service label. Without that object Prometheus does not scrape the endpoint, even if it answers. Logs and traces for the new service still need `PROFILE=full`.
 
 ## What does not change
 

@@ -26,7 +26,7 @@ The kubeconfig lands in `.cache/kubeconfig`. State and kubeconfig stay out of Gi
 2. `docker build` of both images.
 3. `terraform init` and `terraform apply` with `repo_host_path` (this clone's folder), `app_image` (the tag read from the dev overlay), the kubeconfig path, and `observability_profile` (`lite` by default). `make up PROFILE=full` or `make observe-full` points `root` at the full overlay.
 
-The apply finishes when Argo CD and the `root` Application exist. The other Applications keep syncing after that. `make status` lists `SYNC STATUS` and `HEALTH STATUS`. The first kube-prometheus-stack sync is the longest.
+The apply finishes when Argo CD and the `root` Application exist. The other Applications keep syncing after that. `make status` lists `SYNC STATUS` and `HEALTH STATUS`. The first kube-prometheus-stack sync is the longest. Give Docker Desktop 8 GB before `make up`: `lite` already used about 5.3 GiB in the kind node.
 
 `make down` deletes the kind cluster and removes the local Terraform state. It does not run `terraform destroy`: uninstalling Helm and Argo CD hits Application finalizers and hangs, and the node delete already drops every object. The next `make up` starts from an empty state. `kind delete` has `-` so a missing cluster does not fail the target.
 

@@ -4,7 +4,7 @@
 
 Kustomize is a YAML generator. It is not a template with `if`. You declare a base and a list of patches. `kustomize build` prints the objects with namespace, replicas, image, and patches already applied. `kubectl apply -k` and Argo CD consume that output. The cluster never sees `kustomization.yaml`. It sees Deployment, Service, Ingress.
 
-Helm, used for third-party pieces, is another generator: a chart with `values.yaml` and templates. Here Helm installs ingress-nginx, cert-manager, Kyverno, kube-prometheus-stack, and Argo CD. Kustomize describes what is ours, because the gap between `dev` and `prod` is small and does not need a template language.
+Helm, used for third-party pieces, is another generator: a chart with `values.yaml` and templates. Here Helm installs ingress-nginx, cert-manager, Kyverno, kube-prometheus-stack, and Argo CD. Kustomize describes what is ours, because the gap between `dev` and `prod` is small and does not need a template language. The same tool lists which Argo CD Applications exist: [platform/apps/lite](../../platform/apps/lite) and [platform/apps/full](../../platform/apps/full) both include [platform/apps/common](../../platform/apps/common). `full` also includes [platform/lgtm](../../platform/lgtm).
 
 ## Base and overlays
 

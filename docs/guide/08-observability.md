@@ -24,7 +24,7 @@ kind does not expose etcd, the scheduler, the controller-manager, or kube-proxy 
 
 ## The three objects that are ours
 
-In [platform/observability](../../platform/observability), applied by the `observability` Application after the chart:
+In [platform/observability](../../platform/observability), applied by the `observability` Application after the chart. Shared objects live in `base/`. The dashboard is `lite/dashboard.yaml` or `full/dashboard.yaml`.
 
 **ServiceMonitor `prumo`.** Points at Services with `app.kubernetes.io/name: prumo` in both namespaces. Reads the port named `http`, path `/metrics`, every 30s. Prometheus stores the `prumo_up` series. With the cluster up there are three series: one from the dev Pod and two from the prod Pods, all with value `1`.
 
@@ -38,19 +38,20 @@ kube_deployment_status_replicas_available{namespace=~"prumo-.+", deployment="pru
 
 **Dashboard `Prumo`.** A ConfigMap with the label `grafana_dashboard: "1"`. A sidecar in the Grafana Pod copies that JSON to `/tmp/dashboards/prumo.json` and reloads the list. `grafana.ini` points the home page at that file and redirects `/` to `/d/prumo/prumo`. Without that, Grafana 13 opens the "Welcome to Grafana" screen, which shows no panel, even though the dashboards exist under Dashboards. The `lite` dashboard stops at Prometheus panels. The logs panel is on `full`.
 
-The panels read the `prometheus` datasource:
+The panels on both profiles read the `prometheus` datasource:
 
 - available replicas and `prumo_up`, by namespace
 - `PrumoDown`: `ok` while the rule is not `firing`, `firing` when it is
 - requests per second, from `prumo_requests_total` (the `/metrics` path is not counted)
 - CPU and memory of the `app` container in the `prumo-*` namespaces
-- logs from the `app` container, read from Loki
+
+On `full` only: logs from the `app` container, read from Loki.
 
 The Prometheus datasource has `manageAlerts: true`. The Prometheus rule then shows up under Alerting, not only inside Prometheus. With the workload up it stays normal, not firing.
 
-## Loki, Tempo, and Mimir
+## Loki, Tempo, and Mimir (`full` only)
 
-Grafana on its own only draws. The LGTM stack is Grafana plus three stores, one per signal:
+These three are off on `lite`. Grafana on its own only draws. The LGTM stack is Grafana plus three stores, one per signal:
 
 - **Loki** stores logs. It indexes only the labels (`namespace`, `pod`, `container`, `app`), not the text. Searching for a snippet of the line is a filter over the chunks in the requested window.
 - **Tempo** stores traces. A trace is the span tree of one request. Tempo finds a trace by ID with no index at all.
@@ -82,7 +83,7 @@ The workload does not create a span. It reads `traceparent` and writes `trace_id
 
 ### How the signals link in Grafana
 
-The datasources are in the kube-prometheus-stack values, with fixed uids: `loki`, `tempo`, `mimir`.
+On `full`, the extra datasources are in the kube-prometheus-stack values, with fixed uids: `loki`, `tempo`, `mimir`. `lite` only has Prometheus and Alertmanager.
 
 - **Log to trace.** The Loki datasource has a derived field that recognizes `trace_id=<32 hex>` on the line. Open the line in the logs panel: the `trace_id` field has the "Open in Tempo" link.
 - **Trace to log.** On the open trace, the span logs button queries Loki with `{namespace=~"prumo-.+|ingress-nginx"} |= "<trace id>"`. The ingress line and the workload line both appear.
@@ -94,7 +95,7 @@ The `Prometheus` datasource stays the default and the `Prumo` dashboard still re
 
 Grafana: `http://grafana.prumo.test:8080`. User `admin`, password `prumo-dev-admin`. The first screen is the `Prumo` dashboard. The Kubernetes dashboards themselves (node CPU, pods, kubelet) stay under Dashboards, titled `Kubernetes / ...`.
 
-Loki, Tempo, and Mimir have no Ingress. Grafana talks to them from inside the cluster. To query without Grafana:
+On `full`, Loki, Tempo, and Mimir have no Ingress. Grafana talks to them from inside the cluster. To query without Grafana:
 
 ```bash
 kubectl -n monitoring port-forward svc/loki 3100:3100
@@ -104,4 +105,6 @@ kubectl -n monitoring port-forward svc/mimir 9009:9009
 
 Mimir answers the Prometheus API at `/prometheus`, for example `http://localhost:9009/prometheus/api/v1/query?query=up`.
 
-The [walkthrough](../demo.md) scales `prumo-prod` to 0 and waits a minute. The alert card turns to `firing` and the rule shows up under Alerting. selfHeal brings the 2 replicas back on the next cycle.
+The [walkthrough](../demo.md) scales `prumo-prod` to 0 and waits a minute. The alert card turns to `firing` and the rule shows up under Alerting. selfHeal brings the 2 replicas back on the next cycle. That step works on `lite`. The log-to-trace step needs `full`.
+
+`lite` is not a small cluster. A measured `make up` put the kind node at about 5.3 GiB; `full` at about 6.5 GiB. Give Docker Desktop 8 GB for either profile.

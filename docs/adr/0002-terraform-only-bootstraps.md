@@ -6,7 +6,7 @@ You can describe a Deployment, an Ingress, and a Helm release in Terraform. Ever
 
 ## Decision
 
-Terraform creates the cluster, loads the local image, installs Argo CD, starts the git daemon, and writes the Grafana Secret. Everything else lives in Git and is applied by Argo CD.
+Terraform creates the cluster, loads the local image, installs Argo CD, starts the git daemon, and writes the Grafana Secret. It also sets `observability_profile` (`lite` or `full`) on the `root` Application path. Everything else lives in Git and is applied by Argo CD.
 
 ## Consequences
 

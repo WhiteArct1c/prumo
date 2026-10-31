@@ -27,7 +27,7 @@ flowchart LR
 
   subgraph kind["kind cluster"]
     argo["Argo CD"]
-    plat["Platform<br/>ingress-nginx, cert-manager<br/>Kyverno, LGTM"]
+    plat["Platform<br/>ingress-nginx, cert-manager<br/>Kyverno, Prometheus"]
     dev["prumo-dev<br/>1 replica"]
     prod["prumo-prod<br/>2 replicas"]
   end
@@ -46,7 +46,7 @@ Argo CD reads a `git daemon` inside the cluster that serves this clone's `.git`.
 
 You need:
 
-- Docker Desktop with at least 4 GB of memory (`lite`, the default). Use 8 GB for `PROFILE=full`
+- Docker Desktop with **8 GB of memory**, even on `lite`. The kind node alone used about 5.3 GiB on `lite` and 6.5 GiB on `full`. kube-prometheus-stack (Prometheus, Grafana, Alertmanager) is already heavy. Turning off Loki, Tempo, and Mimir saves about 1 GiB, not half the laptop. 4 GB is not enough.
 - `make`, `terraform`, `kind`, `kubectl`, `helm`, `kustomize`, `sops`, and `age` on `PATH`
 - ports 8080 and 8443 free
 - this line in your hosts file (`C:\Windows\System32\drivers\etc\hosts` on Windows, `/etc/hosts` on Linux and macOS):
@@ -66,7 +66,7 @@ make check           # /healthz on dev and prod
 make down            # tear it all down, cluster included
 ```
 
-`make up` returns when Argo CD is up. Applications keep syncing after that. kube-prometheus-stack is the slowest. `lite` is the default: the Grafana home page shows replicas, process health, and the `PrumoDown` alert. Logs, traces, and 7-day metrics need `PROFILE=full`.
+`make up` returns when Argo CD is up. Applications keep syncing after that. kube-prometheus-stack is the slowest. `lite` is the default: the Grafana home page shows replicas, process health, and the `PrumoDown` alert. Logs, traces, and 7-day metrics need `PROFILE=full`. `lite` is fewer signals, not a small cluster.
 
 Ports 8080 and 8443 bind to `127.0.0.1`. Another machine on the network cannot reach Grafana or Argo CD.
 
@@ -118,11 +118,17 @@ prumo/
 │   └── overlays/        dev (1 replica) and prod (2 replicas)
 ├── platform/
 │   ├── root/            Chart that creates the root Application
-│   ├── apps/            lite and full overlays: the list Argo CD reconciles
+│   ├── apps/
+│   │   ├── common/      Applications both profiles share
+│   │   ├── lite/        default overlay (Prometheus, Grafana)
+│   │   └── full/        lite plus Loki, Tempo, Mimir, Alloy
 │   ├── lgtm/            Loki, Tempo, Mimir, and Alloy Applications (`full` only)
 │   ├── certs/           Local ClusterIssuer
 │   ├── mimir/           Monolithic Mimir, no chart
-│   ├── observability/   ServiceMonitor, PrometheusRule, and dashboard
+│   ├── observability/
+│   │   ├── base/        ServiceMonitor and PrometheusRule
+│   │   ├── lite/        dashboard without logs
+│   │   └── full/        dashboard with the Loki panel
 │   ├── secrets/         Grafana Secret, encrypted with SOPS
 │   └── git/             git daemon image that serves this repo to Argo CD
 ├── policies/            Kyverno ClusterPolicies and the invalid Pod fixture
@@ -147,7 +153,7 @@ The ADRs cover the choices that weigh the most:
 - [0002](docs/adr/0002-terraform-only-bootstraps.md): Terraform only bootstraps, Argo CD does the rest
 - [0003](docs/adr/0003-gitops-with-argocd.md): GitOps with Argo CD
 - [0004](docs/adr/0004-sops-with-a-dev-key.md): SOPS with the development key in the repository
-- [0005](docs/adr/0005-monolithic-lgtm.md): Loki, Tempo, and Mimir in monolithic mode, to fit in 8 GB
+- [0005](docs/adr/0005-monolithic-lgtm.md): Loki, Tempo, and Mimir in monolithic mode, on the `full` profile
 - [0006](docs/adr/0006-argocd-reads-local-git.md): Argo CD reads local Git only, never GitHub
 
 ## Common problems
@@ -156,7 +162,7 @@ The ADRs cover the choices that weigh the most:
 |---|---|
 | `make up` stops with "Argo CD only reads commits" | The repository has no commit yet |
 | A change does not show up in the cluster | The file was not committed |
-| Pods in `monitoring` restarting or `Pending` | Docker Desktop is short on memory. `lite` wants about 4 GB, `full` wants 8 GB |
+| Pods in `monitoring` restarting or `Pending` | Docker Desktop has less than 8 GB. `lite` already used ~5.3 GiB in the kind node |
 | `*.prumo.test` addresses do not open | The hosts line is missing, or the port is not 8080 |
 
 ## Limits

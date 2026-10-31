@@ -6,7 +6,7 @@ The cluster needs a source of truth that someone else can read. A pipeline that 
 
 ## Decision
 
-Argo CD is the only component that applies what lives in [platform/apps](../../platform/apps) and [deploy/prumo](../../deploy/prumo). Sync is automatic. CI builds the image, scans it, and, in the release job, updates the tag in Git. It does not apply a production manifest.
+Argo CD is the only component that applies what lives in [platform/apps/lite](../../platform/apps/lite) or [platform/apps/full](../../platform/apps/full), and in [deploy/prumo](../../deploy/prumo). Sync is automatic. CI builds the image, scans it, and, in the release job, updates the tag in Git. It does not apply a production manifest.
 
 The Git Argo CD reads is a `git daemon` inside the cluster that serves the local clone. `make up` works without GitHub, and a local commit reaches the cluster without a push. Even after the repository is published, the cluster does not read GitHub ([ADR 0006](0006-argocd-reads-local-git.md)).
 

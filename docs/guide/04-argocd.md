@@ -43,7 +43,7 @@ Every Application belongs to an AppProject, which says where it may read from, w
 | `prumo` | `prumo-dev` and `prumo-prod` | only the git daemon, only the two namespaces, only `Namespace`, `Deployment`, `Service`, `Ingress`, `NetworkPolicy`, and `Certificate` |
 | `default` | none | nothing |
 
-`platform` lives in the root chart, in [platform/root/templates/project.yaml](../../platform/root/templates/project.yaml), because `root` needs it to exist. `prumo` and the locked `default` live in `platform/apps`, on wave -4.
+`platform` lives in the root chart, in [platform/root/templates/project.yaml](../../platform/root/templates/project.yaml), because `root` needs it to exist. `prumo` and the locked `default` live in [platform/apps/common](../../platform/apps/common), on wave -4. Both the `lite` and `full` overlays include that directory.
 
 In practice, someone who edits `deploy/prumo` cannot create a ClusterRoleBinding, a DaemonSet, or a Pod in `kube-system` through this path. Argo CD rejects the sync before it reaches the API. Someone who edits `platform/apps` still has admin power, because a file there can create another AppProject. The project splits paths inside the repository. It does not protect against whoever writes to the repository.
 

@@ -26,7 +26,7 @@ The order below is the order traffic and install happen.
 
 **alloy** (`full` only). The collector. Reads stdout from every container and writes to Loki. Receives traces from ingress-nginx and forwards them to Tempo. Without it, Loki and Tempo stay up and empty.
 
-**observability.** What is ours on top of that chart: which Service to scrape (the workload `/metrics`), the `PrumoDown` rule, and the `Prumo` dashboard. It stays separate from the chart so our config does not mix with third-party Helm values.
+**observability.** What is ours on top of that chart: which Service to scrape (the workload `/metrics`), the `PrumoDown` rule, and the `Prumo` dashboard. `lite` and `full` share [platform/observability/base](../../platform/observability/base). Each profile has its own dashboard. It stays separate from the chart so our config does not mix with third-party Helm values.
 
 **prumo-dev.** The API, one replica, host `dev.prumo.test`, `ENVIRONMENT=dev`.
 
