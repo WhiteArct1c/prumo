@@ -3,8 +3,8 @@ resource "kind_cluster" "prumo" {
   wait_for_ready  = true
   kubeconfig_path = var.kubeconfig_path
 
-  # O kind 0.33 sobe Kubernetes 1.37 por padrão. Essa versão não conclui o
-  # kubeadm em Docker Desktop que ainda usa cgroup v1. A 1.32 inicia.
+  # kind 0.33 defaults to Kubernetes 1.37. That version does not finish
+  # kubeadm on Docker Desktop still using cgroup v1. 1.32 starts.
   node_image = "kindest/node:v1.32.2"
 
   kind_config {
@@ -14,21 +14,27 @@ resource "kind_cluster" "prumo" {
     node {
       role = "control-plane"
 
+      # Without listen_address Docker publishes on 0.0.0.0 and Grafana and
+      # Argo CD are open to the local network, with the password in the README.
       extra_port_mappings {
         container_port = 80
         host_port      = 8080
+        listen_address = "127.0.0.1"
         protocol       = "TCP"
       }
 
       extra_port_mappings {
         container_port = 443
         host_port      = 8443
+        listen_address = "127.0.0.1"
         protocol       = "TCP"
       }
 
+      # Only .git is mounted. The whole clone folder would also bring in
+      # tfstate and the admin kubeconfig, which live outside Git.
       extra_mounts {
-        host_path      = var.repo_host_path
-        container_path = "/git/prumo"
+        host_path      = "${var.repo_host_path}/.git"
+        container_path = "/git/prumo/.git"
         read_only      = true
       }
     }

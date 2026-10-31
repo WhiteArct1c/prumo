@@ -1,20 +1,20 @@
 variable "cluster_name" {
   type        = string
-  description = "Nome do cluster kind."
+  description = "kind cluster name."
   default     = "prumo"
 }
 
 variable "repo_host_path" {
   type        = string
-  description = "Caminho absoluto do repositório na máquina. O kind monta essa pasta no nó para o git daemon."
+  description = "Absolute path of the repository on the host. kind mounts that folder's .git on the node for the git daemon."
 }
 
 variable "app_image" {
   type        = string
-  description = "Imagem do workload de referência já construída localmente. O Terraform carrega essa imagem no cluster."
+  description = "Locally built sample workload image. Terraform loads it into the cluster."
 }
 
 variable "kubeconfig_path" {
   type        = string
-  description = "Arquivo kubeconfig escrito pelo kind. Fica fora do Git."
+  description = "kubeconfig file written by kind. Stays out of Git."
 }
