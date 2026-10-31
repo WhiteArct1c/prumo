@@ -1,63 +1,63 @@
-# Roteiro de demonstração
+# Demo walkthrough
 
-Pré-requisito: `make up` terminou e `make check` responde `ok` nos dois hosts.
+Prerequisite: `make up` finished and `make check` answers `ok` on both hosts.
 
-## 1. Dois ambientes, a mesma imagem
+## 1. Two environments, the same image
 
-Abra:
+Open:
 
 - http://dev.prumo.test:8080
 - http://prod.prumo.test:8080
 
-Os dois textos citam o ambiente. `dev` tem uma réplica. `prod` tem duas.
+Both texts name the environment. `dev` has one replica. `prod` has two.
 
 ```bash
 kubectl -n prumo-dev get deploy prumo
 kubectl -n prumo-prod get deploy prumo
 ```
 
-## 2. O Git é a fonte da verdade
+## 2. Git is the source of truth
 
-A interface do Argo CD está em http://argocd.prumo.test:8080. Usuário `admin`. Senha:
+The Argo CD UI is at http://argocd.prumo.test:8080. User `admin`. Password:
 
 ```bash
 make argocd-password
 ```
 
-As Applications estão `Synced` e `Healthy`. O caminho até aqui foi commit, não `kubectl apply` a partir do CI.
+The Applications are `Synced` and `Healthy`. The path here was a commit, not `kubectl apply` from CI.
 
-## 3. A política recusa um manifesto inseguro
+## 3. The policy rejects an unsafe manifest
 
 ```bash
 kubectl apply -f policies/fixtures/pod-invalido.yaml
 ```
 
-O Kyverno recusa a tag `latest` e a ausência de limites. O workload que já está no ar passou pelas mesmas regras.
+Kyverno rejects the `latest` tag and the missing limits. The workload that is already up passed the same rules.
 
-## 4. O alerta dispara quando o workload sai do ar
+## 4. The alert fires when the workload goes down
 
 ```bash
 kubectl -n prumo-prod scale deployment/prumo --replicas=0
 ```
 
-Espere pouco mais de um minuto. No Grafana, em http://grafana.prumo.test:8080, usuário `admin`, senha `prumo-dev-admin`. A página inicial é o dashboard `Prumo`. O card `Alerta PrumoForaDoAr` mostra `disparado` em `prumo-prod`. Em Alerting, a mesma regra aparece na lista. O ambiente `dev` continua com a réplica no ar.
+Wait a little over a minute. In Grafana, at http://grafana.prumo.test:8080, user `admin`, password `prumo-dev-admin`. The home page is the `Prumo` dashboard. The `Alerta PrumoForaDoAr` card shows `disparado` on `prumo-prod`. Under Alerting, the same rule appears in the list. The `dev` environment still has its replica up.
 
-Volte o ambiente ao que o Git pede. O Argo CD também desfaz isso no próximo ciclo de selfHeal. Para não esperar:
+Put the environment back to what Git asks for. Argo CD also undoes this on the next selfHeal cycle. To skip the wait:
 
 ```bash
 kubectl -n prumo-prod scale deployment/prumo --replicas=2
 ```
 
-Se o selfHeal já tiver corrigido, o comando só confirma o número.
+If selfHeal already fixed it, the command only confirms the number.
 
-## 5. Do log ao trace
+## 5. From the log to the trace
 
-Faça alguns pedidos pelo ingress:
+Make a few requests through ingress:
 
 ```bash
 for i in 1 2 3 4 5; do curl -s http://prod.prumo.test:8080/ >/dev/null; done
 ```
 
-No dashboard `Prumo`, o painel `Logs do container app` mostra as linhas novas terminando em `trace_id=...`. Abra uma linha. O campo `trace_id` tem o link `Abrir no Tempo`. O trace mostra o span `HTTP GET prod.prumo.test` do ingress-nginx, com status e duração.
+On the `Prumo` dashboard, the `Logs do container app` panel shows the new lines ending in `trace_id=...`. Open a line. The `trace_id` field has the `Abrir no Tempo` link. The trace shows the `HTTP GET prod.prumo.test` span from ingress-nginx, with status and duration.
 
-No trace, o botão de logs do span volta ao Loki e lista as duas linhas do mesmo pedido: a do ingress-nginx e a do workload. As linhas de `/healthz` não têm `trace_id`: a probe do kubelet não passa pelo ingress.
+On the trace, the span logs button goes back to Loki and lists both lines from the same request: ingress-nginx and the workload. `/healthz` lines have no `trace_id`: the kubelet probe does not go through ingress.
