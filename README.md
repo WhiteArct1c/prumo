@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/prumo-logo-white.png" alt="Prumo" width="100%">
+  <img src="docs/assets/prumo-logo-no-background.png" alt="Prumo">
 </p>
 
 A local Kubernetes platform you can stand up on a laptop to see how an application behaves in a cluster that already looks like a cloud one: GitOps, admission policies, TLS, and observability.
