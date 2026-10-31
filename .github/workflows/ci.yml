@@ -133,10 +133,10 @@ jobs:
         run: |
           kubectl create namespace prumo-dev --dry-run=client -o yaml | kubectl apply -f -
           for _ in $(seq 1 20); do
-            if ! kubectl apply -f policies/fixtures/pod-invalido.yaml; then
+            if ! kubectl apply -f policies/fixtures/invalid-pod.yaml; then
               exit 0
             fi
-            kubectl delete pod prumo-invalida -n prumo-dev --ignore-not-found
+            kubectl delete pod prumo-invalid -n prumo-dev --ignore-not-found
             sleep 5
           done
           echo "The invalid Pod was accepted. The policy did not hold."
@@ -178,27 +178,27 @@ jobs:
           TAG="$(git rev-parse HEAD:apps/prumo)"
           echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}:${TAG}" >> "$GITHUB_ENV"
           if grep -q "newTag: ${TAG}$" deploy/prumo/base/kustomization.yaml; then
-            echo "publicar=false" >> "$GITHUB_OUTPUT"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
           else
-            echo "publicar=true" >> "$GITHUB_OUTPUT"
+            echo "publish=true" >> "$GITHUB_OUTPUT"
           fi
 
       - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
-        if: steps.tag.outputs.publicar == 'true'
+        if: steps.tag.outputs.publish == 'true'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
-        if: steps.tag.outputs.publicar == 'true'
+        if: steps.tag.outputs.publish == 'true'
         with:
           context: apps/prumo
           push: true
           tags: ${{ env.IMAGE }}
 
       - name: Install kustomize
-        if: steps.tag.outputs.publicar == 'true'
+        if: steps.tag.outputs.publish == 'true'
         working-directory: ${{ runner.temp }}
         run: |
           set -euo pipefail
@@ -208,14 +208,14 @@ jobs:
           sudo mv kustomize /usr/local/bin/
 
       - name: Write the new tag in Git
-        if: steps.tag.outputs.publicar == 'true'
+        if: steps.tag.outputs.publish == 'true'
         working-directory: deploy/prumo/base
         run: kustomize edit set image "prumo=${IMAGE}"
 
       # The token only appears on this step. With persist-credentials it would sit
       # in .git/config during login and the build, which run third-party actions.
       - name: Commit the tag
-        if: steps.tag.outputs.publicar == 'true'
+        if: steps.tag.outputs.publish == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

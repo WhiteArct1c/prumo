@@ -4,7 +4,7 @@ metadata:
   name: platform
   namespace: argocd
 spec:
-  description: Peças da plataforma e a própria root. Instalam CRD, webhook e RBAC, então o projeto é do tamanho de um admin. O que ele limita é de onde vêm os manifests.
+  description: Platform pieces and root itself. They install CRDs, webhooks, and RBAC, so the project is the size of an admin. What it limits is where the manifests come from.
   sourceRepos:
     - git://git.git.svc.cluster.local/prumo
     - https://kubernetes.github.io/ingress-nginx

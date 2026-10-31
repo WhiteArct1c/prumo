@@ -22,7 +22,7 @@ In [platform/observability](../../platform/observability), applied by the `obser
 
 **ServiceMonitor `prumo`.** Points at Services with `app.kubernetes.io/name: prumo` in both namespaces. Reads the port named `http`, path `/metrics`, every 30s. Prometheus stores the `prumo_up` series. With the cluster up there are three series: one from the dev Pod and two from the prod Pods, all with value `1`.
 
-**PrometheusRule `prumo`.** One rule, `PrumoForaDoAr`:
+**PrometheusRule `prumo`.** One rule, `PrumoDown`:
 
 ```promql
 kube_deployment_status_replicas_available{namespace=~"prumo-.+", deployment="prumo"} == 0
@@ -35,7 +35,7 @@ kube_deployment_status_replicas_available{namespace=~"prumo-.+", deployment="pru
 The panels read the `prometheus` datasource:
 
 - available replicas and `prumo_up`, by namespace
-- `PrumoForaDoAr`: `ok` while the rule is not `firing`, `disparado` when it is
+- `PrumoDown`: `ok` while the rule is not `firing`, `firing` when it is
 - requests per second, from `prumo_requests_total` (the `/metrics` path is not counted)
 - CPU and memory of the `app` container in the `prumo-*` namespaces
 - logs from the `app` container, read from Loki
@@ -48,7 +48,7 @@ Grafana on its own only draws. The LGTM stack is Grafana plus three stores, one 
 
 - **Loki** stores logs. It indexes only the labels (`namespace`, `pod`, `container`, `app`), not the text. Searching for a snippet of the line is a filter over the chunks in the requested window.
 - **Tempo** stores traces. A trace is the span tree of one request. Tempo finds a trace by ID with no index at all.
-- **Mimir** stores metrics for longer than Prometheus. Prometheus still scrapes and evaluates the `PrumoForaDoAr` rule. It also sends every sample to Mimir through `remote_write`.
+- **Mimir** stores metrics for longer than Prometheus. Prometheus still scrapes and evaluates the `PrumoDown` rule. It also sends every sample to Mimir through `remote_write`.
 
 All three run as a single binary (monolithic), one replica, on `emptyDir`. [ADR 0005](../adr/0005-monolithic-lgtm.md) says why and what that costs.
 
@@ -98,4 +98,4 @@ kubectl -n monitoring port-forward svc/mimir 9009:9009
 
 Mimir answers the Prometheus API at `/prometheus`, for example `http://localhost:9009/prometheus/api/v1/query?query=up`.
 
-The [walkthrough](../demo.md) scales `prumo-prod` to 0 and waits a minute. The alert card turns to `disparado` and the rule shows up under Alerting. selfHeal brings the 2 replicas back on the next cycle.
+The [walkthrough](../demo.md) scales `prumo-prod` to 0 and waits a minute. The alert card turns to `firing` and the rule shows up under Alerting. selfHeal brings the 2 replicas back on the next cycle.

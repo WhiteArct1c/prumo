@@ -1,16 +1,16 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: proibir-tag-latest
+  name: forbid-latest-tag
   annotations:
-    policies.kyverno.io/title: Proibir a tag latest
+    policies.kyverno.io/title: Forbid the latest tag
     policies.kyverno.io/category: Prumo
     policies.kyverno.io/severity: medium
 spec:
   validationFailureAction: Enforce
   background: true
   rules:
-    - name: tag-explicita
+    - name: explicit-tag
       match:
         any:
           - resources:
@@ -20,12 +20,12 @@ spec:
                 - prumo-dev
                 - prumo-prod
       validate:
-        message: "A imagem precisa de uma tag explícita."
+        message: "The image must have an explicit tag."
         pattern:
           spec:
             containers:
               - image: "?*:*"
-    - name: sem-latest
+    - name: no-latest
       match:
         any:
           - resources:
@@ -35,7 +35,7 @@ spec:
                 - prumo-dev
                 - prumo-prod
       validate:
-        message: "A tag latest é proibida. Publique uma tag imutável."
+        message: "The latest tag is forbidden. Publish an immutable tag."
         pattern:
           spec:
             containers:

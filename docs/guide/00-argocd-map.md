@@ -14,7 +14,7 @@ The order below is the order traffic and install happen.
 
 **kyverno.** The Kubernetes API doorman. Before a Pod is written, the API server asks Kyverno. If the rule says reject, `kubectl apply` comes back with an error and the Pod never exists. Four processes (admission, background, cleanup, reports) in the `kyverno` namespace.
 
-**policies.** The three rules themselves, not the doorman. `exigir-limits`, `proibir-tag-latest`, and `exigir-non-root`. They only apply to the `prumo-dev` and `prumo-prod` namespaces. Kyverno without these rules rejects nothing of ours. The rules without Kyverno are idle YAML.
+**policies.** The three rules themselves, not the doorman. `require-limits`, `forbid-latest-tag`, and `require-non-root`. They only apply to the `prumo-dev` and `prumo-prod` namespaces. Kyverno without these rules rejects nothing of ours. The rules without Kyverno are idle YAML.
 
 **kube-prometheus-stack.** The chart that installs Prometheus (stores metrics), Alertmanager (stores alerts), and Grafana (draws). It also installs kube-state-metrics, which turns Deployments and Pods into numbers, and node-exporter, which reads CPU and memory from the node.
 
@@ -26,7 +26,7 @@ The order below is the order traffic and install happen.
 
 **alloy.** The collector. Reads stdout from every container and writes to Loki. Receives traces from ingress-nginx and forwards them to Tempo. Without it, Loki and Tempo stay up and empty.
 
-**observability.** What is ours on top of that chart: which Service to scrape (the workload `/metrics`), the `PrumoForaDoAr` rule, and the `Prumo` dashboard. It stays separate from the chart so our config does not mix with third-party Helm values.
+**observability.** What is ours on top of that chart: which Service to scrape (the workload `/metrics`), the `PrumoDown` rule, and the `Prumo` dashboard. It stays separate from the chart so our config does not mix with third-party Helm values.
 
 **prumo-dev.** The API, one replica, host `dev.prumo.test`, `ENVIRONMENT=dev`.
 

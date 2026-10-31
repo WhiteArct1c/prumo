@@ -1,7 +1,7 @@
-"""Workload de referência do Prumo.
+"""Prumo sample workload.
 
-Esta API existe para o caminho de entrega ter o que carregar. Ela não é um
-produto. Um time de produto teria o próprio serviço neste lugar.
+This API exists so the delivery path has something to run. It is not a
+product. A product team would put their own service here.
 """
 
 import os
@@ -29,13 +29,13 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/metrics":
             lines = [
-                "# HELP prumo_up 1 enquanto o processo está atendendo.",
+                "# HELP prumo_up 1 while the process is serving.",
                 "# TYPE prumo_up gauge",
                 "prumo_up 1",
-                "# HELP prumo_info Identidade do workload de referência.",
+                "# HELP prumo_info Identity of the sample workload.",
                 "# TYPE prumo_info gauge",
                 f'prumo_info{{environment="{SAFE_ENVIRONMENT}"}} 1',
-                "# HELP prumo_requests_total Pedidos HTTP recebidos, sem contar /metrics.",
+                "# HELP prumo_requests_total HTTP requests received, excluding /metrics.",
                 "# TYPE prumo_requests_total counter",
             ]
             with REQUESTS_LOCK:
@@ -48,7 +48,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, "text/plain; version=0.0.4; charset=utf-8", body)
             return
         if path == "/":
-            message = f"Prumo workload de referência. Ambiente: {SAFE_ENVIRONMENT}.\n"
+            message = f"Prumo sample workload. Environment: {SAFE_ENVIRONMENT}.\n"
             self._send(200, "text/plain; charset=utf-8", message.encode())
             return
         self._send(404, "text/plain; charset=utf-8", b"not found\n")

@@ -1,16 +1,16 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: exigir-limits
+  name: require-limits
   annotations:
-    policies.kyverno.io/title: Exigir requests e limits
+    policies.kyverno.io/title: Require requests and limits
     policies.kyverno.io/category: Prumo
     policies.kyverno.io/severity: medium
 spec:
   validationFailureAction: Enforce
   background: true
   rules:
-    - name: containers-com-recursos
+    - name: containers-have-resources
       match:
         any:
           - resources:
@@ -20,7 +20,7 @@ spec:
                 - prumo-dev
                 - prumo-prod
       validate:
-        message: "Todo container precisa declarar requests e limits de cpu e memory."
+        message: "Every container must declare cpu and memory requests and limits."
         pattern:
           spec:
             containers:

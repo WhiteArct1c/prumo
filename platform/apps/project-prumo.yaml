@@ -6,7 +6,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "-4"
 spec:
-  description: O workload. Só os namespaces dele e só os tipos que o overlay gera.
+  description: The workload. Only its namespaces and only the kinds the overlay produces.
   sourceRepos:
     - git://git.git.svc.cluster.local/prumo
   destinations:

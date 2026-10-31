@@ -10,7 +10,7 @@ data:
     {
       "title": "Prumo",
       "uid": "prumo",
-      "description": "Dev e prod do workload.",
+      "description": "Dev and prod of the sample workload.",
       "schemaVersion": 39,
       "version": 3,
       "refresh": "30s",
@@ -21,7 +21,7 @@ data:
         {
           "id": 1,
           "type": "stat",
-          "title": "Réplicas disponíveis",
+          "title": "Available replicas",
           "datasource": {"type": "prometheus", "uid": "prometheus"},
           "gridPos": {"h": 5, "w": 8, "x": 0, "y": 0},
           "targets": [
@@ -54,7 +54,7 @@ data:
         {
           "id": 2,
           "type": "stat",
-          "title": "Processo no ar",
+          "title": "Process up",
           "datasource": {"type": "prometheus", "uid": "prometheus"},
           "gridPos": {"h": 5, "w": 8, "x": 8, "y": 0},
           "targets": [
@@ -87,12 +87,12 @@ data:
         {
           "id": 3,
           "type": "stat",
-          "title": "Alerta PrumoForaDoAr",
+          "title": "PrumoDown alert",
           "datasource": {"type": "prometheus", "uid": "prometheus"},
           "gridPos": {"h": 5, "w": 8, "x": 16, "y": 0},
           "targets": [
             {
-              "expr": "max by (namespace) (ALERTS{alertname=\"PrumoForaDoAr\",alertstate=\"firing\"}) or kube_deployment_spec_replicas{deployment=\"prumo\"} * 0",
+              "expr": "max by (namespace) (ALERTS{alertname=\"PrumoDown\",alertstate=\"firing\"}) or kube_deployment_spec_replicas{deployment=\"prumo\"} * 0",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
@@ -108,7 +108,7 @@ data:
               "min": 0,
               "max": 1,
               "mappings": [
-                {"type": "value", "options": {"0": {"text": "ok", "color": "green"}, "1": {"text": "disparado", "color": "red"}}}
+                {"type": "value", "options": {"0": {"text": "ok", "color": "green"}, "1": {"text": "firing", "color": "red"}}}
               ],
               "thresholds": {
                 "mode": "absolute",
@@ -124,7 +124,7 @@ data:
         {
           "id": 4,
           "type": "timeseries",
-          "title": "Pedidos por segundo",
+          "title": "Requests per second",
           "datasource": {"type": "prometheus", "uid": "prometheus"},
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 5},
           "targets": [
@@ -146,7 +146,7 @@ data:
         {
           "id": 5,
           "type": "timeseries",
-          "title": "Réplicas disponíveis",
+          "title": "Available replicas",
           "datasource": {"type": "prometheus", "uid": "prometheus"},
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 5},
           "targets": [
@@ -168,7 +168,7 @@ data:
         {
           "id": 6,
           "type": "timeseries",
-          "title": "CPU do container app",
+          "title": "app container CPU",
           "datasource": {"type": "prometheus", "uid": "prometheus"},
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 13},
           "targets": [
@@ -190,7 +190,7 @@ data:
         {
           "id": 7,
           "type": "timeseries",
-          "title": "Memória do container app",
+          "title": "app container memory",
           "datasource": {"type": "prometheus", "uid": "prometheus"},
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 13},
           "targets": [
@@ -212,8 +212,8 @@ data:
         {
           "id": 8,
           "type": "logs",
-          "title": "Logs do container app",
-          "description": "Linhas que passaram pelo ingress trazem trace_id. Abra a linha e siga o link para o Tempo.",
+          "title": "app container logs",
+          "description": "Lines that went through ingress carry a trace_id. Open the line and follow the link to Tempo.",
           "datasource": {"type": "loki", "uid": "loki"},
           "gridPos": {"h": 10, "w": 24, "x": 0, "y": 21},
           "targets": [

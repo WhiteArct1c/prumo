@@ -28,8 +28,8 @@ spec:
               kubernetes.io/metadata.name: monitoring
       ports:
         - port: 8080
-    # No kind, o kubelet faz o probe a partir da rede do nó (a bridge do Docker).
-    # Em um cluster gerenciado, este bloco seria o CIDR dos nodes.
+    # On kind, the kubelet probes from the node network (the Docker bridge).
+    # On a managed cluster this block would be the node CIDR.
     - from:
         - ipBlock:
             cidr: 172.16.0.0/12

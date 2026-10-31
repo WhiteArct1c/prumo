@@ -6,9 +6,10 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "-4"
 spec:
-  # O Argo CD cria o default aceitando tudo e não deixa apagar. Nada usa este
-  # projeto, então ele fica sem origem, sem destino e sem tipo permitido.
-  description: Travado. Toda Application declara platform ou prumo.
+  # Argo CD creates default accepting everything and does not let you delete
+  # it. Nothing uses this project, so it has no source, no destination, and
+  # no allowed kind.
+  description: Locked. Every Application declares platform or prumo.
   sourceRepos: []
   sourceNamespaces: []
   destinations: []

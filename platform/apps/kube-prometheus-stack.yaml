@@ -49,7 +49,7 @@ spec:
                     matcherRegex: 'trace_id=([0-9a-f]{32})'
                     url: '$${__value.raw}'
                     datasourceUid: tempo
-                    urlDisplayLabel: Abrir no Tempo
+                    urlDisplayLabel: Open in Tempo
             - name: Tempo
               uid: tempo
               type: tempo

@@ -21,7 +21,7 @@ The base lives in [deploy/prumo/base](../../deploy/prumo/base). Each file is one
 
 `resources.requests` (20m cpu, 32Mi memory) go into the scheduler's math. `resources.limits` (200m, 64Mi) are the ceiling the runtime applies. Without limits, Kyverno rejects the Pod in the workload namespaces.
 
-The `securityContext` sets `runAsUser: 10001`, `runAsNonRoot`, `readOnlyRootFilesystem`, `allowPrivilegeEscalation: false`, and `capabilities.drop: [ALL]`. That is the same contract the `exigir-non-root` policy asks for.
+The `securityContext` sets `runAsUser: 10001`, `runAsNonRoot`, `readOnlyRootFilesystem`, `allowPrivilegeEscalation: false`, and `capabilities.drop: [ALL]`. That is the same contract the `require-non-root` policy asks for.
 
 **Service.** ClusterIP, port 80, `targetPort` named `http` (container 8080). The ClusterIP does not change when the Pod is recreated. The selector `app.kubernetes.io/name: prumo` picks the Pods. Ingress and Prometheus talk to the Service, not to the Pod IP.
 

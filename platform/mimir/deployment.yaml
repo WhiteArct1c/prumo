@@ -8,8 +8,8 @@ metadata:
     app.kubernetes.io/part-of: prumo
 spec:
   replicas: 1
-  # O volume é um emptyDir e o anel do ingester tem um membro só. Dois Pods ao
-  # mesmo tempo dividiriam as séries sem replicação.
+  # The volume is emptyDir and the ingester ring has a single member. Two
+  # Pods at once would split the series with no replication.
   strategy:
     type: Recreate
   selector:

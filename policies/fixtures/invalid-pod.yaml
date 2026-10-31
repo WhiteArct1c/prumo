@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: prumo-invalida
+  name: prumo-invalid
   namespace: prumo-dev
 spec:
   containers:

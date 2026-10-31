@@ -1,19 +1,19 @@
 output "cluster_name" {
-  description = "Nome do cluster kind."
+  description = "kind cluster name."
   value       = kind_cluster.prumo.name
 }
 
 output "kubeconfig_path" {
-  description = "Kubeconfig deste cluster."
+  description = "kubeconfig for this cluster."
   value       = kind_cluster.prumo.kubeconfig_path
 }
 
 output "argocd_url" {
-  description = "Interface do Argo CD, depois que o ingress-nginx sincronizar."
+  description = "Argo CD UI, after ingress-nginx syncs."
   value       = "http://argocd.prumo.test:8080"
 }
 
 output "grafana_url" {
-  description = "Grafana, depois que o kube-prometheus-stack sincronizar."
+  description = "Grafana, after kube-prometheus-stack syncs."
   value       = "http://grafana.prumo.test:8080"
 }

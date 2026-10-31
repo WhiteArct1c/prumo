@@ -12,16 +12,16 @@ The policies are `ClusterPolicy` objects (group `kyverno.io/v1`) in [policies](.
 
 | Policy | What the `pattern` requires |
 |---|---|
-| `exigir-limits` | `requests` and `limits` for `cpu` and `memory` on every container. `?*` in Kyverno means "any non-empty value" |
-| `proibir-tag-latest` | an image with a tag, and a tag other than `latest` |
-| `exigir-non-root` | `runAsNonRoot`, no `allowPrivilegeEscalation`, `capabilities.drop` containing `ALL` |
+| `require-limits` | `requests` and `limits` for `cpu` and `memory` on every container. `?*` in Kyverno means "any non-empty value" |
+| `forbid-latest-tag` | an image with a tag, and a tag other than `latest` |
+| `require-non-root` | `runAsNonRoot`, no `allowPrivilegeEscalation`, `capabilities.drop` containing `ALL` |
 
 The controller also generates, in `status.autogen`, the same rule for Deployment, StatefulSet, DaemonSet, and Job. Without that, a Deployment with no resources would pass admission (the object is not a Pod) and the Pod created by the ReplicaSet would be the only one rejected, with a worse error. Argo CD ignores that `status` so it does not mark the policy OutOfSync.
 
 Proof, with the cluster up:
 
 ```bash
-kubectl apply -f policies/fixtures/pod-invalido.yaml
+kubectl apply -f policies/fixtures/invalid-pod.yaml
 ```
 
 The manifest asks for `image: nginx:latest`, declares no resources, and has no securityContext, in the `prumo-dev` namespace. The API server response cites all three rules. The file is not in the policies `kustomization.yaml`. If it were, Argo CD would try to apply it forever and the `policies` Application would stay Degraded.

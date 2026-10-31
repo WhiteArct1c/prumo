@@ -1,9 +1,9 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: exigir-non-root
+  name: require-non-root
   annotations:
-    policies.kyverno.io/title: Exigir container sem root
+    policies.kyverno.io/title: Require a non-root container
     policies.kyverno.io/category: Prumo
     policies.kyverno.io/severity: high
 spec:
@@ -20,7 +20,7 @@ spec:
                 - prumo-dev
                 - prumo-prod
       validate:
-        message: "O Pod e os containers precisam rodar sem root, sem escalar privilégio, e sem capabilities."
+        message: "The Pod and its containers must run as non-root, without privilege escalation, and without capabilities."
         pattern:
           spec:
             securityContext:

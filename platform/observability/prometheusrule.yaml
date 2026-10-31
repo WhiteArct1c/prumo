@@ -9,12 +9,12 @@ spec:
   groups:
     - name: prumo.workload
       rules:
-        - alert: PrumoForaDoAr
+        - alert: PrumoDown
           expr: |
             kube_deployment_status_replicas_available{namespace=~"prumo-.+", deployment="prumo"} == 0
           for: 1m
           labels:
             severity: warning
           annotations:
-            summary: "O workload em {{ $labels.namespace }} está fora do ar."
-            description: "Nenhuma réplica disponível. O caminho de entrega chegou ao cluster, mas o workload não está atendendo."
+            summary: "The workload in {{ $labels.namespace }} is down."
+            description: "No replica is available. The delivery path reached the cluster, but the workload is not serving."
