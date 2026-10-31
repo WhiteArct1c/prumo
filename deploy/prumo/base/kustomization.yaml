@@ -11,4 +11,4 @@ resources:
 images:
 - name: prumo
   newName: ghcr.io/whitearct1c/prumo
-  newTag: 03dfb29360dff36984c33c74fbf2d1fab6f34c69
+  newTag: bdf5d354b97ec541cd8b501676a1ee93e38a372f
